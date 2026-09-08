@@ -68,6 +68,7 @@ const getInitialViewFromPath = (): { view: AppView; filterKey: string | null } =
   switch (path) {
     case '/customers':
       return { view: 'crm_customers', filterKey: null };
+    case '/crm':
     case '/leads':
       return { view: 'crm_leads', filterKey: null };
     case '/quotations':

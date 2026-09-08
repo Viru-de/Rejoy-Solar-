@@ -10,7 +10,7 @@ header('Content-Type: application/json; charset=utf-8');
 $host = getenv('DB_HOST') ?: 'localhost';
 $dbname = getenv('DB_NAME') ?: '';
 $user = getenv('DB_USER') ?: '';
-$pass = getenv('DB_PASSWORD') ?: '';
+$pass = getenv('DB_PASS') ?: (getenv('DB_PASSWORD') ?: '');
 
 // Try reading from .env if variables not set
 if (empty($dbname) && file_exists(__DIR__ . '/.env')) {
@@ -19,7 +19,7 @@ if (empty($dbname) && file_exists(__DIR__ . '/.env')) {
         $host = $env['DB_HOST'] ?? $host;
         $dbname = $env['DB_NAME'] ?? $dbname;
         $user = $env['DB_USER'] ?? $user;
-        $pass = $env['DB_PASSWORD'] ?? $pass;
+        $pass = $env['DB_PASS'] ?? ($env['DB_PASSWORD'] ?? $pass);
     }
 }
 

@@ -33,29 +33,28 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // 1. Resolve GEMINI_API_KEY from environment or .env file
-$apiKey = getenv('GEMINI_API_KEY');
+$apiKey = getenv('GEMINI_API_KEY') ?: ($_ENV['GEMINI_API_KEY'] ?? ($_SERVER['GEMINI_API_KEY'] ?? null));
 
-if (!$apiKey && file_exists(__DIR__ . '/.env')) {
-    $envLines = file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($envLines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        list($k, $v) = array_pad(explode('=', $line, 2), 2, null);
-        if (trim($k) === 'GEMINI_API_KEY') {
-            $apiKey = trim(trim($v), "\"'");
-            break;
-        }
-    }
-}
+// Search for .env in current directory, parent (public_html), or one level above public_html
+$possibleEnvPaths = [
+    __DIR__ . '/.env',
+    __DIR__ . '/../.env',
+    __DIR__ . '/../../.env'
+];
 
-// Check parent folder for .env if placed in public_html root or above
-if (!$apiKey && file_exists(__DIR__ . '/../.env')) {
-    $envLines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($envLines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        list($k, $v) = array_pad(explode('=', $line, 2), 2, null);
-        if (trim($k) === 'GEMINI_API_KEY') {
-            $apiKey = trim(trim($v), "\"'");
-            break;
+if (!$apiKey) {
+    foreach ($possibleEnvPaths as $envPath) {
+        if (file_exists($envPath) && is_readable($envPath)) {
+            $envLines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            foreach ($envLines as $line) {
+                $line = trim($line);
+                if (empty($line) || strpos($line, '#') === 0) continue;
+                list($k, $v) = array_pad(explode('=', $line, 2), 2, null);
+                if (trim($k) === 'GEMINI_API_KEY') {
+                    $apiKey = trim(trim($v), "\"'");
+                    break 2;
+                }
+            }
         }
     }
 }
@@ -64,7 +63,7 @@ if (!$apiKey) {
     http_response_code(503);
     echo json_encode([
         'error' => 'GEMINI_API_KEY is not configured on the Hostinger server.',
-        'help' => 'Set GEMINI_API_KEY in your Hostinger cPanel/hPanel environment variables or create a .env file in public_html with GEMINI_API_KEY=your_key.'
+        'help' => 'Set GEMINI_API_KEY in your Hostinger cPanel/hPanel environment variables or create a .env file with GEMINI_API_KEY=your_key.'
     ]);
     exit;
 }
@@ -81,7 +80,7 @@ if (!$data || empty($data['prompt'])) {
 
 $prompt = $data['prompt'];
 $systemInstruction = $data['systemInstruction'] ?? 'You are an expert Solar EPC and CRM AI assistant.';
-$model = $data['model'] ?? 'gemini-1.5-flash';
+$model = $data['model'] ?? 'gemini-2.5-flash';
 
 // 3. Prepare payload for Google Gemini API
 $geminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . urlencode($apiKey);
