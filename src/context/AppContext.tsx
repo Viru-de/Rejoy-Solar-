@@ -60,10 +60,122 @@ interface AppContextType {
   triggerRefresh: () => void;
 }
 
+const getInitialViewFromPath = (): { view: AppView; filterKey: string | null } => {
+  if (typeof window === 'undefined') {
+    return { view: 'dashboard', filterKey: null };
+  }
+  const path = window.location.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+  switch (path) {
+    case '/customers':
+      return { view: 'crm_customers', filterKey: null };
+    case '/leads':
+      return { view: 'crm_leads', filterKey: null };
+    case '/quotations':
+      return { view: 'crm_quotations', filterKey: null };
+    case '/projects':
+      return { view: 'projects_all', filterKey: null };
+    case '/site-visits':
+      return { view: 'projects_stage_filtered', filterKey: 'site_survey' };
+    case '/installations':
+      return { view: 'projects_stage_filtered', filterKey: 'module_mounting' };
+    case '/services':
+    case '/service':
+      return { view: 'service', filterKey: null };
+    case '/reports':
+      return { view: 'reports', filterKey: null };
+    case '/settings':
+      return { view: 'settings', filterKey: null };
+    case '/finance':
+      return { view: 'finance', filterKey: null };
+    case '/hrms':
+      return { view: 'hrms', filterKey: null };
+    case '/customer-portal':
+    case '/portal':
+      return { view: 'customer_portal', filterKey: null };
+    case '/control-center':
+    case '/customer-control-center':
+      return { view: 'customer_control_center', filterKey: null };
+    case '/':
+    case '/dashboard':
+    default:
+      return { view: 'dashboard', filterKey: null };
+  }
+};
+
+const getPathForView = (view: AppView, filterKey?: string | null): string => {
+  switch (view) {
+    case 'dashboard':
+      return '/dashboard';
+    case 'crm_leads':
+      return '/leads';
+    case 'crm_customers':
+      return '/customers';
+    case 'crm_quotations':
+      return '/quotations';
+    case 'projects_all':
+      return '/projects';
+    case 'projects_stage_filtered':
+      if (filterKey === 'site_survey') return '/site-visits';
+      if (filterKey === 'module_mounting') return '/installations';
+      return '/projects';
+    case 'customer_control_center':
+      return '/control-center';
+    case 'finance':
+      return '/finance';
+    case 'hrms':
+      return '/hrms';
+    case 'service':
+      return '/services';
+    case 'reports':
+      return '/reports';
+    case 'settings':
+      return '/settings';
+    case 'customer_portal':
+      return '/customer-portal';
+    default:
+      return '/dashboard';
+  }
+};
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeView, setActiveView] = useState<AppView>('dashboard');
+  const initialRoute = getInitialViewFromPath();
+  const [activeView, setActiveViewState] = useState<AppView>(initialRoute.view);
+  const [stageFilterKey, setStageFilterKeyInternal] = useState<string | null>(initialRoute.filterKey);
+
+  const setActiveView = (view: AppView) => {
+    setActiveViewState(view);
+    if (typeof window !== 'undefined') {
+      const targetPath = getPathForView(view, stageFilterKey);
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ view }, '', targetPath);
+      }
+    }
+  };
+
+  const setStageFilterKey = (key: string | null) => {
+    setStageFilterKeyInternal(key);
+    if (typeof window !== 'undefined' && activeView === 'projects_stage_filtered') {
+      const targetPath = getPathForView('projects_stage_filtered', key);
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ view: 'projects_stage_filtered', filter: key }, '', targetPath);
+      }
+    }
+  };
+
+  // Listen to browser Back/Forward navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const current = getInitialViewFromPath();
+      setActiveViewState(current.view);
+      setStageFilterKeyInternal(current.filterKey);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>('cust-1');
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>('proj-1');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -77,7 +189,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
   const [importExportModule, setImportExportModule] = useState<ExportModule>('Leads');
-  const [stageFilterKey, setStageFilterKey] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [settings, setSettings] = useState<SystemSettings>(() => storageService.getSettings());
   const [toasts, setToasts] = useState<ToastMessage[]>([]);

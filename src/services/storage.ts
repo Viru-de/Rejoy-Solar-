@@ -424,10 +424,10 @@ function buildStandardWorkflowStages(projectId: string, projectCapacityKw: numbe
         { id: 'doc-1', name: 'Site_Survey_Report_Sanand.pdf', url: '#', fileType: 'pdf', sizeMb: 3.4, uploadedAt: '2026-08-14', uploadedBy: 'Rajesh Kumar' }
       ],
       activities: [
-        { id: 'act-1-1', timestamp: '2026-08-12 10:00 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Assigned site survey to Rajesh Kumar' },
-        { id: 'act-1-2', timestamp: '2026-08-14 11:20 AM', user: 'Rajesh Kumar', role: 'Site Survey Engineer', action: 'Captured GPS location (22.9868° N, 72.3789° E)' },
-        { id: 'act-1-3', timestamp: '2026-08-14 12:15 PM', user: 'Rajesh Kumar', role: 'Site Survey Engineer', action: 'Completed all 6 checklist items and uploaded 2 survey photos' },
-        { id: 'act-1-4', timestamp: '2026-08-15 09:30 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Approved site survey and unlocked Customer Confirmation' }
+        { id: `${projectId}-act-1-1`, timestamp: '2026-08-12 10:00 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Assigned site survey to Rajesh Kumar' },
+        { id: `${projectId}-act-1-2`, timestamp: '2026-08-14 11:20 AM', user: 'Rajesh Kumar', role: 'Site Survey Engineer', action: 'Captured GPS location (22.9868° N, 72.3789° E)' },
+        { id: `${projectId}-act-1-3`, timestamp: '2026-08-14 12:15 PM', user: 'Rajesh Kumar', role: 'Site Survey Engineer', action: 'Completed all 6 checklist items and uploaded 2 survey photos' },
+        { id: `${projectId}-act-1-4`, timestamp: '2026-08-15 09:30 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Approved site survey and unlocked Customer Confirmation' }
       ]
     },
     {
@@ -458,7 +458,7 @@ function buildStandardWorkflowStages(projectId: string, projectCapacityKw: numbe
         { id: 'doc-2', name: 'Approved_Single_Line_Diagram_SLD.pdf', url: '#', fileType: 'pdf', sizeMb: 2.1, uploadedAt: '2026-08-18', uploadedBy: 'Amit Sharma' }
       ],
       activities: [
-        { id: 'act-2-1', timestamp: '2026-08-18 04:00 PM', user: 'Amit Sharma', role: 'Project Manager', action: 'Client signed off SLD layout drawings. Advance milestone verified.' }
+        { id: `${projectId}-act-2-1`, timestamp: '2026-08-18 04:00 PM', user: 'Amit Sharma', role: 'Project Manager', action: 'Client signed off SLD layout drawings. Advance milestone verified.' }
       ]
     },
     {
@@ -499,10 +499,10 @@ function buildStandardWorkflowStages(projectId: string, projectCapacityKw: numbe
       ],
       documents: [],
       activities: [
-        { id: 'act-3-1', timestamp: '2026-08-20 09:00 AM', user: 'Rajesh Kumar', role: 'Civil Team', action: 'Rajesh started civil work foundation marking' },
-        { id: 'act-3-2', timestamp: '2026-08-24 04:30 PM', user: 'Rajesh Kumar', role: 'Civil Team', action: 'Rajesh uploaded 3 photos (Before, During, After)' },
-        { id: 'act-3-3', timestamp: '2026-08-24 05:00 PM', user: 'Rajesh Kumar', role: 'Civil Team', action: 'Rajesh completed checklist (6/6)' },
-        { id: 'act-3-4', timestamp: '2026-08-25 10:00 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Project Manager approved civil work' }
+        { id: `${projectId}-act-3-1`, timestamp: '2026-08-20 09:00 AM', user: 'Rajesh Kumar', role: 'Civil Team', action: 'Rajesh started civil work foundation marking' },
+        { id: `${projectId}-act-3-2`, timestamp: '2026-08-24 04:30 PM', user: 'Rajesh Kumar', role: 'Civil Team', action: 'Rajesh uploaded 3 photos (Before, During, After)' },
+        { id: `${projectId}-act-3-3`, timestamp: '2026-08-24 05:00 PM', user: 'Rajesh Kumar', role: 'Civil Team', action: 'Rajesh completed checklist (6/6)' },
+        { id: `${projectId}-act-3-4`, timestamp: '2026-08-25 10:00 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Project Manager approved civil work' }
       ]
     },
     {
@@ -534,9 +534,9 @@ function buildStandardWorkflowStages(projectId: string, projectCapacityKw: numbe
       ],
       documents: [],
       activities: [
-        { id: 'act-4-1', timestamp: '2026-08-26 10:00 AM', user: 'Dinesh Yadav', role: 'Structure Team', action: 'Started structure erection with HDG materials' },
-        { id: 'act-4-2', timestamp: '2026-08-29 05:00 PM', user: 'Dinesh Yadav', role: 'Structure Team', action: 'Completed structure assembly with 23 degree tilt' },
-        { id: 'act-4-3', timestamp: '2026-08-30 11:15 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Approved structure fabrication' }
+        { id: `${projectId}-act-4-1`, timestamp: '2026-08-26 10:00 AM', user: 'Dinesh Yadav', role: 'Structure Team', action: 'Started structure erection with HDG materials' },
+        { id: `${projectId}-act-4-2`, timestamp: '2026-08-29 05:00 PM', user: 'Dinesh Yadav', role: 'Structure Team', action: 'Completed structure assembly with 23 degree tilt' },
+        { id: `${projectId}-act-4-3`, timestamp: '2026-08-30 11:15 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Approved structure fabrication' }
       ]
     },
     {
@@ -565,7 +565,7 @@ function buildStandardWorkflowStages(projectId: string, projectCapacityKw: numbe
       photos: [],
       documents: [],
       activities: [
-        { id: 'act-5-1', timestamp: '2026-09-01 02:00 PM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Completed ESE LA installation with isolated down conductor' }
+        { id: `${projectId}-act-5-1`, timestamp: '2026-09-01 02:00 PM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Completed ESE LA installation with isolated down conductor' }
       ]
     },
     {
@@ -594,7 +594,7 @@ function buildStandardWorkflowStages(projectId: string, projectCapacityKw: numbe
       photos: [],
       documents: [],
       activities: [
-        { id: 'act-6-1', timestamp: '2026-09-03 04:00 PM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Completed earthing grid routing' }
+        { id: `${projectId}-act-6-1`, timestamp: '2026-09-03 04:00 PM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Completed earthing grid routing' }
       ]
     },
     {
@@ -627,7 +627,7 @@ function buildStandardWorkflowStages(projectId: string, projectCapacityKw: numbe
       ],
       documents: [],
       activities: [
-        { id: 'act-7-1', timestamp: '2026-09-04 05:00 PM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Earth test report verified. All readings well under 1.5 Ohms.' }
+        { id: `${projectId}-act-7-1`, timestamp: '2026-09-04 05:00 PM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Earth test report verified. All readings well under 1.5 Ohms.' }
       ]
     },
     {
@@ -666,8 +666,8 @@ function buildStandardWorkflowStages(projectId: string, projectCapacityKw: numbe
       ],
       documents: [],
       activities: [
-        { id: 'act-8-1', timestamp: '2026-09-05 09:00 AM', user: 'Manoj Tiwari', role: 'Installation Team', action: 'Began module installation on arrays 1 to 6' },
-        { id: 'act-8-2', timestamp: '2026-09-06 02:00 PM', user: 'Manoj Tiwari', role: 'Installation Team', action: 'Uploaded progress photo. 70% modules physically mounted' }
+        { id: `${projectId}-act-8-1`, timestamp: '2026-09-05 09:00 AM', user: 'Manoj Tiwari', role: 'Installation Team', action: 'Began module installation on arrays 1 to 6' },
+        { id: `${projectId}-act-8-2`, timestamp: '2026-09-06 02:00 PM', user: 'Manoj Tiwari', role: 'Installation Team', action: 'Uploaded progress photo. 70% modules physically mounted' }
       ]
     },
     {
@@ -695,7 +695,7 @@ function buildStandardWorkflowStages(projectId: string, projectCapacityKw: numbe
       photos: [],
       documents: [],
       activities: [
-        { id: 'act-9-1', timestamp: '2026-09-06 10:30 AM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Mounted 100 kW Sungrow grid-tied inverter' }
+        { id: `${projectId}-act-9-1`, timestamp: '2026-09-06 10:30 AM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Mounted 100 kW Sungrow grid-tied inverter' }
       ]
     },
     {
@@ -1331,7 +1331,7 @@ const initialSettings: SystemSettings = {
   companyGst: '24AAECS9921D1Z8',
   currencySymbol: '₹',
   taxRatePercent: 18,
-  tallyServerUrl: 'http://localhost:9000',
+  tallyServerUrl: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_TALLY_SERVER_URL) ? import.meta.env.VITE_TALLY_SERVER_URL : '',
   tallyCompany: 'SolarPulse EPC 2026-27',
   tallyStatus: 'NOT CONFIGURED',
   whatsAppStatus: 'SANDBOX_READY'
@@ -1625,7 +1625,7 @@ class StorageService {
       updatedStage.activities = [
         ...(updatedStage.activities || []),
         {
-          id: `act-${Date.now()}`,
+          id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           timestamp: new Date().toLocaleString(),
           user: actorName,
           role: actorRole,
@@ -1650,7 +1650,7 @@ class StorageService {
         nextStage.activities = [
           ...(nextStage.activities || []),
           {
-            id: `act-${Date.now()}-auto`,
+            id: `act-${Date.now()}-auto-${Math.random().toString(36).slice(2, 7)}`,
             timestamp: new Date().toLocaleString(),
             user: 'System Workflow Engine',
             role: 'Automation',
@@ -1712,7 +1712,7 @@ class StorageService {
     item.completedBy = item.completed ? actorName : undefined;
 
     stage.activities.push({
-      id: `act-${Date.now()}`,
+      id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       timestamp: new Date().toLocaleString(),
       user: actorName,
       role: actorRole,
@@ -1823,9 +1823,11 @@ class StorageService {
     const projects = this.getProjects();
     projects.forEach(p => {
       p.stages.forEach(s => {
-        s.activities?.forEach(a => {
+        s.activities?.forEach((a, aIdx) => {
+          // Guarantee unique key across any project, stage, or activity
+          const uniqueId = a.id && a.id.startsWith(p.id) ? a.id : `${p.id}-${s.stageKey}-${a.id || aIdx}`;
           activities.push({
-            id: a.id,
+            id: uniqueId,
             action: `${p.projectCode} • ${s.title}: ${a.action}`,
             details: a.details || `${s.title} updated`,
             userName: a.user,

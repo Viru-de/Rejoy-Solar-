@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/layout/Header';
@@ -8,21 +8,31 @@ import { Toast } from './components/common/Toast';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal';
 import { WhatsAppModal } from './components/common/WhatsAppModal';
 import { ImportExportModal } from './components/common/ImportExportModal';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
-import { DashboardView } from './components/views/DashboardView';
-import { CustomerControlCenterView } from './components/views/CustomerControlCenterView';
-import { CrmView } from './components/views/CrmView';
-import { ProjectsView } from './components/views/ProjectsView';
-import { FinanceView } from './components/views/FinanceView';
-import { HrmsView } from './components/views/HrmsView';
-import { ServiceView } from './components/views/ServiceView';
-import { ReportsView } from './components/views/ReportsView';
-import { SettingsView } from './components/views/SettingsView';
-import { CustomerPortalView } from './components/views/CustomerPortalView';
+// Code-splitting via dynamic imports for optimized Hostinger bundle performance
+const DashboardView = React.lazy(() => import('./components/views/DashboardView').then(m => ({ default: m.DashboardView })));
+const CustomerControlCenterView = React.lazy(() => import('./components/views/CustomerControlCenterView').then(m => ({ default: m.CustomerControlCenterView })));
+const CrmView = React.lazy(() => import('./components/views/CrmView').then(m => ({ default: m.CrmView })));
+const ProjectsView = React.lazy(() => import('./components/views/ProjectsView').then(m => ({ default: m.ProjectsView })));
+const FinanceView = React.lazy(() => import('./components/views/FinanceView').then(m => ({ default: m.FinanceView })));
+const HrmsView = React.lazy(() => import('./components/views/HrmsView').then(m => ({ default: m.HrmsView })));
+const ServiceView = React.lazy(() => import('./components/views/ServiceView').then(m => ({ default: m.ServiceView })));
+const ReportsView = React.lazy(() => import('./components/views/ReportsView').then(m => ({ default: m.ReportsView })));
+const SettingsView = React.lazy(() => import('./components/views/SettingsView').then(m => ({ default: m.SettingsView })));
+const CustomerPortalView = React.lazy(() => import('./components/views/CustomerPortalView').then(m => ({ default: m.CustomerPortalView })));
+
+const ViewLoader: React.FC = () => (
+  <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400 gap-3">
+    <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" />
+    <span className="text-xs font-medium text-slate-500">Loading module...</span>
+  </div>
+);
 
 const MainLayout: React.FC = () => {
   const { activeView } = useApp();
   const { isCustomer } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const renderActiveView = () => {
     // If the active role is Customer and they are on dashboard or customer portal, show customer view
@@ -64,16 +74,18 @@ const MainLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50/60 text-slate-900 flex flex-col font-sans antialiased selection:bg-amber-100 selection:text-amber-900">
       {/* Top Universal App Header */}
-      <Header />
+      <Header onToggleMobileMenu={() => setIsMobileMenuOpen(prev => !prev)} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Collapsible Navigation Sidebar */}
-        <Sidebar />
+        <Sidebar isOpen={isMobileMenuOpen} onCloseMobile={() => setIsMobileMenuOpen(false)} />
 
         {/* Primary Operational Stage Canvas */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8">
+        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8 lg:ml-64">
           <div className="max-w-7xl mx-auto">
-            {renderActiveView()}
+            <Suspense fallback={<ViewLoader />}>
+              {renderActiveView()}
+            </Suspense>
           </div>
         </main>
       </div>
@@ -92,10 +104,12 @@ const MainLayout: React.FC = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <MainLayout />
-      </AppProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppProvider>
+          <MainLayout />
+        </AppProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

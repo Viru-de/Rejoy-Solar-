@@ -71,11 +71,11 @@ export const DashboardView: React.FC = () => {
     projects.forEach(p => {
       const stage = p.currentStageKey;
       if (stage === 'site_survey') counts['Survey']++;
-      else if (['quotation_proposal', 'customer_confirmation', 'advance_payment', 'procurement_dispatch'].includes(stage)) counts['Procurement']++;
-      else if (['civil_work', 'structure_mounting'].includes(stage)) counts['Civil/Struct']++;
-      else if (stage === 'panel_installation') counts['Installation']++;
-      else if (stage === 'inverter_electrical') counts['Electrical']++;
-      else if (['testing_commissioning', 'net_metering', 'final_handover'].includes(stage)) counts['Net Metering']++;
+      else if (['quotation_proposal', 'customer_confirmation', 'advance_payment', 'procurement_dispatch'].includes(stage as any)) counts['Procurement']++;
+      else if (['civil_work', 'structure_mounting', 'structure_fabrication'].includes(stage as any)) counts['Civil/Struct']++;
+      else if ((stage as string) === 'panel_installation' || (stage as string) === 'solar_installation' || (stage as string) === 'module_mounting') counts['Installation']++;
+      else if ((stage as string) === 'inverter_electrical' || (stage as string) === 'inverter_installation' || (stage as string) === 'electrical_wiring') counts['Electrical']++;
+      else if (['testing_commissioning', 'net_metering', 'final_handover', 'discom_metering'].includes(stage as any)) counts['Net Metering']++;
       else counts['Commissioned']++;
     });
 
@@ -427,8 +427,8 @@ export const DashboardView: React.FC = () => {
           </div>
 
           <div className="space-y-3.5 max-h-96 overflow-y-auto pr-1">
-            {activities.map((act) => (
-              <div key={act.id} className="relative pl-5 border-l-2 border-slate-200 pb-1 last:border-transparent">
+            {activities.map((act, idx) => (
+              <div key={`${act.id}-${idx}`} className="relative pl-5 border-l-2 border-slate-200 pb-1 last:border-transparent">
                 <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-amber-500 ring-4 ring-white" />
                 <div className="text-xs font-bold text-slate-800">{act.action}</div>
                 <p className="text-xs text-slate-600 mt-0.5">{act.details}</p>

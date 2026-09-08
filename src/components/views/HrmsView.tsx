@@ -215,7 +215,13 @@ export const HrmsView: React.FC = () => {
                         {a.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500">{a.checkInGps}</td>
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500">
+                      {typeof a.checkInGps === 'object' && a.checkInGps !== null
+                        ? `${a.checkInGps.latitude?.toFixed(4)}, ${a.checkInGps.longitude?.toFixed(4)}`
+                        : typeof a.checkInGps === 'string'
+                          ? a.checkInGps
+                          : '-'}
+                    </td>
                     <td className="py-3.5 px-4 text-slate-700">{a.siteLocation}</td>
                   </tr>
                 ))}

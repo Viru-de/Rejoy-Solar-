@@ -232,9 +232,9 @@ export const StageCard: React.FC<StageCardProps> = ({
             </div>
 
             <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
-              {stage.checklist.map((item) => (
+              {stage.checklist.map((item, idx) => (
                 <div
-                  key={item.id}
+                  key={`${item.id}-${idx}`}
                   onClick={() => handleToggleChecklist(item.id)}
                   className="p-3 flex items-start gap-3 hover:bg-slate-50 cursor-pointer transition-colors"
                 >
@@ -247,7 +247,7 @@ export const StageCard: React.FC<StageCardProps> = ({
                   </button>
                   <div className="flex-1">
                     <span className={`text-xs font-medium ${item.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>
-                      {item.label}
+                      {item.label || item.title}
                     </span>
                     {item.completed && item.completedBy && (
                       <p className="text-[10px] text-slate-400 mt-0.5">

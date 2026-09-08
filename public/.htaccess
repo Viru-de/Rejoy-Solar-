@@ -1,0 +1,86 @@
+# ----------------------------------------------------------------------
+# Apache / LiteSpeed Configuration for Hostinger Deployment
+# Solar ERP + CRM Single Page Application (SPA)
+# ----------------------------------------------------------------------
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Prevent directory browsing
+  Options -Indexes
+
+  # Security: Block direct access to hidden files and directories (.git, .env, etc.)
+  RewriteRule "(^|/)\.(?!well-known)" - [F]
+
+  # If an actual file exists (e.g. .css, .js, .png, .jpg, .svg), serve it directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Allow direct execution of backend PHP API scripts in /api/
+  RewriteCond %{REQUEST_URI} ^/api/ [NC]
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+
+  # Fallback for API 404s
+  RewriteRule ^api/.* - [R=404,L]
+
+  # Single Page Application (SPA) rewrite:
+  # Route all web paths (/dashboard, /leads, /customers, /quotations, /installations, /site-visits, etc.)
+  # to index.html so browser refresh and deep linking work without 404 errors.
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# MIME Types for Modern Web Assets
+<IfModule mod_mime.c>
+  AddType application/javascript js mjs
+  AddType text/css css
+  AddType image/svg+xml svg svgz
+  AddType application/json json
+  AddType font/woff2 woff2
+  AddType font/woff woff
+</IfModule>
+
+# Performance: Gzip / Deflate Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/javascript
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/x-javascript
+  AddOutputFilterByType DEFLATE application/json
+  AddOutputFilterByType DEFLATE application/xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# Browser Caching Headers
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # HTML files - do not cache heavily so updates reflect immediately
+  ExpiresByType text/html "access plus 0 seconds"
+
+  # CSS, JavaScript and Web Fonts - 1 year (Vite uses content hashes)
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+
+  # Images and Media
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 year"
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-XSS-Protection "1; mode=block"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

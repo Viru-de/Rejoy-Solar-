@@ -48,14 +48,16 @@ export interface Lead {
   city: string;
   solarCapacityKw: number;
   estimatedValue: number;
-  source: 'Website' | 'Referral' | 'Exhibition' | 'Direct Call' | 'Agent';
-  assignedSalespersonId: string;
-  assignedSalespersonName: string;
+  source: 'Website' | 'Referral' | 'Exhibition' | 'Direct Call' | 'Agent' | string;
+  assignedSalespersonId?: string;
+  assignedSalespersonName?: string;
+  assignedToId?: string;
+  assignedToName?: string;
   status: LeadStatus;
   notes: string;
   nextFollowUpDate?: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export type CustomerType = 'Industrial' | 'Commercial' | 'Residential' | 'Agricultural';
@@ -118,6 +120,7 @@ export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
 export interface ChecklistItem {
   id: string;
   title: string;
+  label?: string;
   completed: boolean;
   completedAt?: string;
   completedBy?: string;
@@ -127,9 +130,10 @@ export interface PhotoAttachment {
   id: string;
   url: string;
   caption: string;
-  type: 'BEFORE' | 'DURING' | 'AFTER' | 'DOCUMENT';
+  type?: 'BEFORE' | 'DURING' | 'AFTER' | 'DOCUMENT';
   uploadedAt: string;
   uploadedBy: string;
+  gpsCoordinates?: string;
   gps?: {
     latitude: number;
     longitude: number;
@@ -165,10 +169,13 @@ export interface ProjectStage {
   assignedRole: UserRole;
   assignedEmployeeId?: string;
   assignedEmployeeName?: string;
+  assignedToName?: string;
   status: StageStatus;
   priority: Priority;
   startDate?: string;
   dueDate?: string;
+  plannedEndDate?: string;
+  actualEndDate?: string;
   completedDate?: string;
   checklist: ChecklistItem[];
   photos: PhotoAttachment[];
@@ -180,8 +187,12 @@ export interface ProjectStage {
     capturedAt: string;
   };
   comments?: string;
+  description?: string;
+  notes?: string;
   approvedBy?: string;
+  approvedAt?: string;
   approvalDate?: string;
+  approvalRemarks?: string;
   rejectionReason?: string;
   activities: StageActivity[];
 }
@@ -214,6 +225,9 @@ export interface SolarProject {
   siteAddress: string;
   city: string;
   location?: string;
+  inverterModel?: string;
+  panelModel?: string;
+  structureType?: string;
   progressPercentage?: number;
   startDate: string;
   expectedCompletionDate: string;
@@ -446,4 +460,5 @@ export interface SystemSettings {
   whatsAppStatus: 'NOT CONFIGURED' | 'SANDBOX_READY' | 'CONNECTED';
   whatsAppApiKey?: string;
   whatsAppPhoneNumberId?: string;
+  whatsAppPhoneId?: string;
 }
