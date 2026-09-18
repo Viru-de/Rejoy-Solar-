@@ -250,15 +250,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const profile = resolveProfileForUser(user);
         saveUserProfile(profile);
       } else {
-        // Fallback for pre-configuration local testing
+        // Match preset persona or fallback for pre-configuration local testing
+        const matchingPreset = PRESET_PERSONAS.find(
+          p => p.profile.email.toLowerCase() === email.trim().toLowerCase()
+        );
+
+        let resolvedRole: UserRole = 'Super Admin';
+        let resolvedDept = 'Management';
+        let resolvedDesig = 'Managing Director';
+        let resolvedName = email.split('@')[0] || 'Solar Team Member';
+
+        if (matchingPreset) {
+          resolvedRole = matchingPreset.profile.role;
+          resolvedDept = matchingPreset.profile.department;
+          resolvedDesig = matchingPreset.profile.designation;
+          resolvedName = matchingPreset.profile.name;
+        } else {
+          const lower = email.toLowerCase();
+          if (lower.includes('survey')) {
+            resolvedRole = 'Site Survey Engineer';
+            resolvedDept = 'Engineering';
+            resolvedDesig = 'Site Feasibility Engineer';
+          } else if (lower.includes('project') || lower.includes('pm')) {
+            resolvedRole = 'Project Manager';
+            resolvedDept = 'Operations';
+            resolvedDesig = 'Senior Solar Project Manager';
+          } else if (lower.includes('sales')) {
+            resolvedRole = 'Sales Manager';
+            resolvedDept = 'Sales';
+            resolvedDesig = 'Business Development Head';
+          } else if (lower.includes('civil')) {
+            resolvedRole = 'Civil Team';
+            resolvedDept = 'Civil';
+            resolvedDesig = 'Civil Foundations Lead';
+          } else if (lower.includes('electrical')) {
+            resolvedRole = 'Electrical Team';
+            resolvedDept = 'Electrical';
+            resolvedDesig = 'Electrical Systems Lead';
+          } else if (lower.includes('account') || lower.includes('finance')) {
+            resolvedRole = 'Accountant';
+            resolvedDept = 'Finance';
+            resolvedDesig = 'Chief Financial Officer';
+          } else if (lower.includes('customer') || lower.includes('client')) {
+            resolvedRole = 'Customer';
+            resolvedDept = 'Customer';
+            resolvedDesig = 'Rooftop Solar Client';
+          }
+        }
+
         const offlineProfile: UserProfile = {
           id: 'usr-local-' + Date.now(),
-          name: email.split('@')[0] || 'Solar Team Member',
+          name: resolvedName,
           email: email.trim(),
-          role: 'Super Admin',
+          role: resolvedRole,
           phone: '+91 98250 11223',
-          department: 'Management',
-          designation: 'Managing Director',
+          department: resolvedDept,
+          designation: resolvedDesig,
           assignedProjects: []
         };
         saveUserProfile(offlineProfile);

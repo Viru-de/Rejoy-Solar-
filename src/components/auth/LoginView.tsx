@@ -320,6 +320,44 @@ export const LoginView: React.FC = () => {
               )}
             </button>
           </form>
+
+          {/* Quick Demo Credentials Panel */}
+          {mode === 'LOGIN' && (
+            <div className="mt-6 pt-5 border-t border-slate-100">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Demo Work Credentials (1-Click Fill)
+                </span>
+                <span className="text-[10px] text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                  Pass: SolarPulse@2026
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                {[
+                  { label: 'Super Admin', email: 'admin@solarpulse.com', role: 'Super Admin', color: 'border-purple-200 bg-purple-50/50 hover:bg-purple-50 text-purple-900' },
+                  { label: 'Project Manager', email: 'pm@solarpulse.com', role: 'Project Manager', color: 'border-blue-200 bg-blue-50/50 hover:bg-blue-50 text-blue-900' },
+                  { label: 'Survey Engineer', email: 'survey@solarpulse.com', role: 'Site Survey Engineer', color: 'border-amber-200 bg-amber-50/50 hover:bg-amber-50 text-amber-900' },
+                  { label: 'Sales Manager', email: 'sales@solarpulse.com', role: 'Sales Manager', color: 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-900' },
+                  { label: 'Customer Portal', email: 'customer@solarpulse.com', role: 'Customer', color: 'border-teal-200 bg-teal-50/50 hover:bg-teal-50 text-teal-900' },
+                  { label: 'Accountant', email: 'finance@solarpulse.com', role: 'Accountant', color: 'border-rose-200 bg-rose-50/50 hover:bg-rose-50 text-rose-900' }
+                ].map(demo => (
+                  <button
+                    key={demo.email}
+                    type="button"
+                    onClick={() => {
+                      setEmail(demo.email);
+                      setPassword('SolarPulse@2026');
+                      setErrorMessage(null);
+                    }}
+                    className={`text-left p-2 rounded-xl border text-[11px] font-medium transition-all flex flex-col ${demo.color} cursor-pointer hover:shadow-xs`}
+                  >
+                    <span className="font-bold truncate">{demo.label}</span>
+                    <span className="text-[10px] opacity-75 font-mono truncate">{demo.email}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Security & Deployment Footer */}
