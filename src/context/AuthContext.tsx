@@ -1,200 +1,151 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { User } from 'firebase/auth';
 import { UserProfile, UserRole } from '../types/solar';
+import {
+  loginWithEmail,
+  registerWithEmail,
+  logoutUser,
+  sendPasswordReset,
+  subscribeToAuthState,
+  isFirebaseConfigured,
+  getFirebaseErrorMessage
+} from '../services/firebase';
 
-export interface PersonaOption {
-  profile: UserProfile;
+export interface RoleDefinition {
+  role: UserRole;
+  department: string;
   description: string;
   badgeColor: string;
 }
 
-export const PRESET_PERSONAS: PersonaOption[] = [
+export const ROLE_DEFINITIONS: RoleDefinition[] = [
   {
-    profile: {
-      id: 'emp-1',
-      name: 'Vikram Patel',
-      email: 'vikram.patel@solarpulse.com',
-      role: 'Super Admin',
-      phone: '+91 98250 11223',
-      department: 'Management',
-      designation: 'Managing Director'
-    },
+    role: 'Super Admin',
+    department: 'Management',
     description: 'Full system control, financial authority & executive oversight',
     badgeColor: 'bg-purple-100 text-purple-800 border-purple-300'
   },
   {
-    profile: {
-      id: 'emp-2',
-      name: 'Amit Sharma',
-      email: 'amit.sharma@solarpulse.com',
-      role: 'Project Manager',
-      phone: '+91 98251 22334',
-      department: 'Operations',
-      designation: 'Senior Project Manager'
-    },
+    role: 'Admin',
+    department: 'Administration',
+    description: 'User management, configuration, operational administration',
+    badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-300'
+  },
+  {
+    role: 'Project Manager',
+    department: 'Operations',
     description: 'Manages all projects, approves workflow stages, coordinates teams',
     badgeColor: 'bg-blue-100 text-blue-800 border-blue-300'
   },
   {
-    profile: {
-      id: 'emp-3',
-      name: 'Rajesh Kumar',
-      email: 'rajesh.kumar@solarpulse.com',
-      role: 'Site Survey Engineer',
-      phone: '+91 98252 33445',
-      department: 'Engineering',
-      designation: 'Lead Site Survey Engineer'
-    },
+    role: 'Site Survey Engineer',
+    department: 'Engineering',
     description: 'Executes technical surveys, captures GPS & roof feasibility',
     badgeColor: 'bg-amber-100 text-amber-800 border-amber-300'
   },
   {
-    profile: {
-      id: 'emp-4',
-      name: 'Priya Verma',
-      email: 'priya.verma@solarpulse.com',
-      role: 'Sales Manager',
-      phone: '+91 98253 44556',
-      department: 'Sales',
-      designation: 'Sales Manager C&I'
-    },
+    role: 'Sales Manager',
+    department: 'Sales',
     description: 'Leads, CRM pipeline, quotation builder, customer conversion',
     badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300'
   },
   {
-    profile: {
-      id: 'emp-5',
-      name: 'Rahul Mehta',
-      email: 'rahul.mehta@solarpulse.com',
-      role: 'Sales Executive',
-      phone: '+91 98254 55667',
-      department: 'Sales',
-      designation: 'Solar Consultant'
-    },
+    role: 'Sales Executive',
+    department: 'Sales',
     description: 'Handles new inquiries, proposal follow-ups, and lead logging',
     badgeColor: 'bg-teal-100 text-teal-800 border-teal-300'
   },
   {
-    profile: {
-      id: 'emp-6',
-      name: 'Dinesh Yadav',
-      email: 'dinesh.yadav@solarpulse.com',
-      role: 'Structure Team',
-      phone: '+91 98255 66778',
-      department: 'Structure',
-      designation: 'Structure Fabrication Lead'
-    },
+    role: 'Structure Team',
+    department: 'Structure',
     description: 'Structure mounting checklists, fabrication photos & tilt alignment',
     badgeColor: 'bg-orange-100 text-orange-800 border-orange-300'
   },
   {
-    profile: {
-      id: 'emp-3-civil',
-      name: 'Suresh Patel',
-      email: 'suresh.patel@solarpulse.com',
-      role: 'Civil Team',
-      phone: '+91 98252 88771',
-      department: 'Civil',
-      designation: 'Civil Foreman'
-    },
+    role: 'Civil Team',
+    department: 'Civil',
     description: 'Foundation casting, pedestal waterproofing, civil task checklists',
     badgeColor: 'bg-stone-100 text-stone-800 border-stone-300'
   },
   {
-    profile: {
-      id: 'emp-7',
-      name: 'Manoj Tiwari',
-      email: 'manoj.tiwari@solarpulse.com',
-      role: 'Installation Team',
-      phone: '+91 98256 77889',
-      department: 'Installation',
-      designation: 'Module Installation Lead'
-    },
+    role: 'Installation Team',
+    department: 'Installation',
     description: 'Solar PV module clamping, string cabling, and field safety',
     badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-300'
   },
   {
-    profile: {
-      id: 'emp-8',
-      name: 'Ankit Joshi',
-      email: 'ankit.joshi@solarpulse.com',
-      role: 'Electrical Team',
-      phone: '+91 98257 88990',
-      department: 'Electrical',
-      designation: 'Senior Electrical Engineer'
-    },
+    role: 'Electrical Team',
+    department: 'Electrical',
     description: 'Inverters, ACDB/DCDB, LT breaker tapping, chemical earth pits',
     badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-300'
   },
   {
-    profile: {
-      id: 'emp-9',
-      name: 'Sneha Kulkarni',
-      email: 'sneha.kulkarni@solarpulse.com',
-      role: 'Accountant',
-      phone: '+91 98258 99001',
-      department: 'Finance',
-      designation: 'Chief Accountant'
-    },
+    role: 'Accountant',
+    department: 'Finance',
     description: 'Payments, invoices, ledger, cash flow, and Tally sync queue',
     badgeColor: 'bg-rose-100 text-rose-800 border-rose-300'
   },
   {
-    profile: {
-      id: 'emp-10',
-      name: 'Neha Gupta',
-      email: 'neha.gupta@solarpulse.com',
-      role: 'HR Manager',
-      phone: '+91 98259 00112',
-      department: 'HR',
-      designation: 'HR & Operations Manager'
-    },
+    role: 'HR Manager',
+    department: 'HR',
     description: 'Employee directory, daily attendance, GPS logs, payroll & leave',
     badgeColor: 'bg-pink-100 text-pink-800 border-pink-300'
   },
   {
-    profile: {
-      id: 'emp-11',
-      name: 'Rohit Verma',
-      email: 'rohit.verma@solarpulse.com',
-      role: 'Service Manager',
-      phone: '+91 98260 11223',
-      department: 'Service',
-      designation: 'Solar Service & AMC Head'
-    },
+    role: 'Service Manager',
+    department: 'Service',
     description: 'Service breakdown tickets, preventive maintenance, AMC renewals',
     badgeColor: 'bg-yellow-100 text-yellow-800 border-yellow-300'
   },
   {
-    profile: {
-      id: 'tech-1',
-      name: 'Ketan Solanki',
-      email: 'ketan.solanki@solarpulse.com',
-      role: 'Technician',
-      phone: '+91 98261 44556',
-      department: 'Service',
-      designation: 'Field Solar Technician'
-    },
+    role: 'Technician',
+    department: 'Service',
     description: 'On-site breakdown troubleshooting, inverter repair, panel washing',
     badgeColor: 'bg-sky-100 text-sky-800 border-sky-300'
   },
   {
-    profile: {
-      id: 'cust-user-1',
-      name: 'J.P. Shah (ABC Industries)',
-      email: 'procurement@abcindustries.in',
-      role: 'Customer',
-      phone: '+91 98795 44321',
-      customerId: 'cust-1',
-      assignedProjects: ['proj-1']
-    },
-    description: 'Client Portal: view 100 kW project progress, invoices, warranties',
+    role: 'Customer',
+    department: 'Customer',
+    description: 'Client Portal: view project progress, invoices, warranties',
     badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300'
   }
 ];
 
-interface AuthContextType {
-  currentUser: UserProfile;
+// Compatibility wrapper for SettingsView and existing consumers
+export const PRESET_PERSONAS = ROLE_DEFINITIONS.map(r => ({
+  profile: {
+    id: `role-${r.role.toLowerCase().replace(/\s+/g, '-')}`,
+    name: r.role,
+    email: `${r.role.toLowerCase().replace(/\s+/g, '.')}@solarpulse.com`,
+    role: r.role,
+    phone: '+91 98000 00000',
+    department: r.department,
+    designation: r.role
+  },
+  description: r.description,
+  badgeColor: r.badgeColor
+}));
+
+export interface AuthContextType {
+  currentUser: UserProfile | null;
+  firebaseUser: User | null;
   currentRole: UserRole;
+  loading: boolean;
+  isAuthenticated: boolean;
+  isFirebaseReady: boolean;
+  login: (email: string, pass: string) => Promise<void>;
+  register: (
+    email: string,
+    pass: string,
+    name: string,
+    role?: UserRole,
+    department?: string,
+    designation?: string,
+    phone?: string
+  ) => Promise<void>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updateRole: (newRole: UserRole) => void;
   switchPersona: (profile: UserProfile) => void;
   canAccessModule: (moduleName: string) => boolean;
   canApproveStage: () => boolean;
@@ -206,30 +157,216 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const USER_PROFILE_STORAGE_KEY = 'solarpulse_firebase_profile_';
+const OFFLINE_SESSION_STORAGE_KEY = 'solarpulse_offline_session';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('solarpulse_active_user');
-    if (saved) {
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const isFirebaseReady = isFirebaseConfigured();
+
+  // Helper to build or retrieve an application profile associated with the Firebase User
+  const resolveProfileForUser = (user: User): UserProfile => {
+    const storageKey = USER_PROFILE_STORAGE_KEY + user.uid;
+    const cached = localStorage.getItem(storageKey);
+    if (cached) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(cached);
+        return {
+          ...parsed,
+          id: user.uid,
+          email: user.email || parsed.email || ''
+        };
       } catch {
-        // fallback
+        // fallback to fresh build
       }
     }
-    return PRESET_PERSONAS[0].profile; // Default Super Admin
-  });
 
-  useEffect(() => {
-    localStorage.setItem('solarpulse_active_user', JSON.stringify(currentUser));
-  }, [currentUser]);
+    const defaultRole: UserRole = 'Super Admin';
+    const profile: UserProfile = {
+      id: user.uid,
+      name: user.displayName || (user.email ? user.email.split('@')[0] : 'Solar User'),
+      email: user.email || '',
+      role: defaultRole,
+      phone: user.phoneNumber || '+91 98250 11223',
+      department: 'Management',
+      designation: 'Managing Director',
+      assignedProjects: []
+    };
 
-  const switchPersona = (profile: UserProfile) => {
-    setCurrentUser(profile);
+    localStorage.setItem(storageKey, JSON.stringify(profile));
+    return profile;
   };
 
-  const isCustomer = currentUser.role === 'Customer';
-  const isSuperAdmin = currentUser.role === 'Super Admin' || currentUser.role === 'Admin';
-  const isProjectManager = currentUser.role === 'Project Manager';
+  // Monitor Firebase Auth state changes
+  useEffect(() => {
+    if (isFirebaseReady) {
+      const unsubscribe = subscribeToAuthState((user) => {
+        setFirebaseUser(user);
+        if (user) {
+          const profile = resolveProfileForUser(user);
+          setCurrentUser(profile);
+        } else {
+          setCurrentUser(null);
+        }
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    } else {
+      // Offline / Developer mode if Firebase keys are not yet added to .env
+      const savedOffline = localStorage.getItem(OFFLINE_SESSION_STORAGE_KEY);
+      if (savedOffline) {
+        try {
+          const parsed = JSON.parse(savedOffline);
+          setCurrentUser(parsed);
+        } catch {
+          setCurrentUser(null);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+      setLoading(false);
+    }
+  }, [isFirebaseReady]);
+
+  // Persist active user profile changes
+  const saveUserProfile = (profile: UserProfile) => {
+    setCurrentUser(profile);
+    if (profile.id) {
+      localStorage.setItem(USER_PROFILE_STORAGE_KEY + profile.id, JSON.stringify(profile));
+    }
+    if (!isFirebaseReady) {
+      localStorage.setItem(OFFLINE_SESSION_STORAGE_KEY, JSON.stringify(profile));
+    }
+  };
+
+  const login = async (email: string, pass: string): Promise<void> => {
+    setLoading(true);
+    try {
+      if (isFirebaseReady) {
+        const user = await loginWithEmail(email, pass);
+        setFirebaseUser(user);
+        const profile = resolveProfileForUser(user);
+        saveUserProfile(profile);
+      } else {
+        // Fallback for pre-configuration local testing
+        const offlineProfile: UserProfile = {
+          id: 'usr-local-' + Date.now(),
+          name: email.split('@')[0] || 'Solar Team Member',
+          email: email.trim(),
+          role: 'Super Admin',
+          phone: '+91 98250 11223',
+          department: 'Management',
+          designation: 'Managing Director',
+          assignedProjects: []
+        };
+        saveUserProfile(offlineProfile);
+      }
+    } catch (err: any) {
+      throw new Error(getFirebaseErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (
+    email: string,
+    pass: string,
+    name: string,
+    role: UserRole = 'Super Admin',
+    department?: string,
+    designation?: string,
+    phone: string = '+91 98250 11223'
+  ): Promise<void> => {
+    setLoading(true);
+    try {
+      if (isFirebaseReady) {
+        const user = await registerWithEmail(email, pass, name);
+        setFirebaseUser(user);
+        const newProfile: UserProfile = {
+          id: user.uid,
+          name: name.trim() || (user.email ? user.email.split('@')[0] : 'Solar User'),
+          email: user.email || email.trim(),
+          role,
+          phone,
+          department: department || 'Operations',
+          designation: designation || role,
+          assignedProjects: []
+        };
+        saveUserProfile(newProfile);
+      } else {
+        const offlineProfile: UserProfile = {
+          id: 'usr-local-' + Date.now(),
+          name: name.trim() || email.split('@')[0],
+          email: email.trim(),
+          role,
+          phone,
+          department: department || 'Operations',
+          designation: designation || role,
+          assignedProjects: []
+        };
+        saveUserProfile(offlineProfile);
+      }
+    } catch (err: any) {
+      throw new Error(getFirebaseErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      if (isFirebaseReady) {
+        await logoutUser();
+      }
+      localStorage.removeItem(OFFLINE_SESSION_STORAGE_KEY);
+      setFirebaseUser(null);
+      setCurrentUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPassword = async (email: string): Promise<void> => {
+    if (!isFirebaseReady) {
+      throw new Error('Firebase Auth is not configured yet. Set VITE_FIREBASE_API_KEY in .env.');
+    }
+    try {
+      await sendPasswordReset(email);
+    } catch (err: any) {
+      throw new Error(getFirebaseErrorMessage(err));
+    }
+  };
+
+  const updateRole = (newRole: UserRole) => {
+    if (!currentUser) return;
+    const def = ROLE_DEFINITIONS.find(r => r.role === newRole);
+    const updated: UserProfile = {
+      ...currentUser,
+      role: newRole,
+      department: def?.department || currentUser.department,
+      designation: def?.role || currentUser.designation
+    };
+    saveUserProfile(updated);
+  };
+
+  const switchPersona = (profile: UserProfile) => {
+    if (!currentUser) return;
+    const updated: UserProfile = {
+      ...currentUser,
+      role: profile.role,
+      department: profile.department || currentUser.department,
+      designation: profile.designation || currentUser.designation
+    };
+    saveUserProfile(updated);
+  };
+
+  const currentRole: UserRole = currentUser?.role || 'Super Admin';
+  const isCustomer = currentRole === 'Customer';
+  const isSuperAdmin = currentRole === 'Super Admin' || currentRole === 'Admin';
+  const isProjectManager = currentRole === 'Project Manager';
   const isFieldStaff = [
     'Site Survey Engineer',
     'Civil Team',
@@ -237,25 +374,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     'Installation Team',
     'Electrical Team',
     'Technician'
-  ].includes(currentUser.role);
+  ].includes(currentRole);
 
   const canApproveStage = (): boolean => {
     return isSuperAdmin || isProjectManager;
   };
 
   const canEditFinancials = (): boolean => {
-    return isSuperAdmin || currentUser.role === 'Accountant';
+    return isSuperAdmin || currentRole === 'Accountant';
   };
 
   const canAccessHR = (): boolean => {
-    return isSuperAdmin || currentUser.role === 'HR Manager';
+    return isSuperAdmin || currentRole === 'HR Manager';
   };
 
   const canAccessModule = (moduleName: string): boolean => {
     if (isSuperAdmin) return true;
 
     if (isCustomer) {
-      // Customer can ONLY access Customer Portal views
       return ['customer_portal', 'my_project', 'my_documents', 'my_payments', 'service_request'].includes(moduleName);
     }
 
@@ -265,28 +401,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       case 'crm':
       case 'leads':
       case 'quotations':
-        return ['Sales Manager', 'Sales Executive', 'Project Manager'].includes(currentUser.role);
+        return ['Sales Manager', 'Sales Executive', 'Project Manager'].includes(currentRole);
       case 'customers':
       case 'projects':
       case 'workflow':
-        return true; // All staff can see customer/project context
+        return true;
       case 'site_survey':
-        return isSuperAdmin || isProjectManager || currentUser.role === 'Site Survey Engineer' || currentUser.role.includes('Sales');
+        return isSuperAdmin || isProjectManager || currentRole === 'Site Survey Engineer' || currentRole.includes('Sales');
       case 'finance':
       case 'invoices':
       case 'accounting':
       case 'tally':
-        return isSuperAdmin || currentUser.role === 'Accountant';
+        return isSuperAdmin || currentRole === 'Accountant';
       case 'hrms':
       case 'employees':
       case 'attendance':
       case 'payroll':
-        return isSuperAdmin || currentUser.role === 'HR Manager';
+        return isSuperAdmin || currentRole === 'HR Manager';
       case 'service':
       case 'amc':
-        return isSuperAdmin || isProjectManager || currentUser.role === 'Service Manager' || currentUser.role === 'Technician';
+        return isSuperAdmin || isProjectManager || currentRole === 'Service Manager' || currentRole === 'Technician';
       case 'reports':
-        return isSuperAdmin || isProjectManager || currentUser.role === 'Sales Manager' || currentUser.role === 'Accountant';
+        return isSuperAdmin || isProjectManager || currentRole === 'Sales Manager' || currentRole === 'Accountant';
       case 'settings':
       case 'roles':
         return isSuperAdmin;
@@ -299,7 +435,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     <AuthContext.Provider
       value={{
         currentUser,
-        currentRole: currentUser.role,
+        firebaseUser,
+        currentRole,
+        loading,
+        isAuthenticated: Boolean(currentUser),
+        isFirebaseReady,
+        login,
+        register,
+        logout,
+        resetPassword,
+        updateRole,
         switchPersona,
         canAccessModule,
         canApproveStage,

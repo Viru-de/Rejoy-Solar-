@@ -281,11 +281,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onCloseMobile }) => {
           {/* Quick Info card at bottom of sidebar */}
           <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
             <div className="flex items-center justify-between text-[11px] font-bold text-slate-700">
-              <span>Quick Navigation</span>
-              <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-sm font-semibold">Ready</span>
+              <span>Firebase Auth</span>
+              <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-sm font-semibold">Active</span>
             </div>
             <p className="text-[11px] text-slate-500 leading-tight">
-              Switch roles anytime using the top-right persona selector to preview role-based access.
+              Session is secured with Firebase Auth. Operational permissions are enforced across all modules.
             </p>
           </div>
         </div>

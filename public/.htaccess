@@ -1,36 +1,47 @@
 # ----------------------------------------------------------------------
 # Apache / LiteSpeed Configuration for Hostinger Deployment
-# Solar ERP + CRM Single Page Application (SPA)
+# SolarPulse EPC ERP & CRM Single Page Application (SPA)
 # ----------------------------------------------------------------------
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
-  # Prevent directory browsing
+  # Disable directory indexes (prevent directory browsing)
   Options -Indexes
 
   # Security: Block direct access to hidden files and directories (.git, .env, etc.)
   RewriteRule "(^|/)\.(?!well-known)" - [F]
 
-  # If an actual file exists (e.g. .css, .js, .png, .jpg, .svg), serve it directly
+  # Allow existing physical files and directories to be served directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # Allow direct execution of backend PHP API scripts in /api/
+  # Allow execution of PHP API endpoints in /api/
   RewriteCond %{REQUEST_URI} ^/api/ [NC]
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
 
-  # Fallback for API 404s
+  # CRITICAL: Return 404 for missing /api/ requests. Never redirect /api/ to index.html
   RewriteRule ^api/.* - [R=404,L]
 
   # Single Page Application (SPA) rewrite:
-  # Route all web paths (/dashboard, /leads, /customers, /quotations, /installations, /site-visits, etc.)
-  # to index.html so browser refresh and deep linking work without 404 errors.
+  # Route all client-side routes (/dashboard, /leads, /customers, /projects, etc.)
+  # to index.html so browser refresh, back/forward and deep linking work without 404s.
   RewriteRule ^ index.html [L]
 </IfModule>
+
+# Security: Deny direct HTTP access to sensitive configuration and schema files
+<FilesMatch "(^\.env|\.sql$|\.git|\.lock$|composer\.(json|lock)|package(-lock)?\.json|tsconfig.*\.json)">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
 
 # MIME Types for Modern Web Assets
 <IfModule mod_mime.c>
@@ -60,7 +71,7 @@
 <IfModule mod_expires.c>
   ExpiresActive On
 
-  # HTML files - do not cache heavily so updates reflect immediately
+  # HTML files - do not cache aggressively so new builds reflect immediately
   ExpiresByType text/html "access plus 0 seconds"
 
   # CSS, JavaScript and Web Fonts - 1 year (Vite uses content hashes)

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { useAuth, PRESET_PERSONAS } from '../../context/AuthContext';
+import { useAuth, ROLE_DEFINITIONS } from '../../context/AuthContext';
 import { storageService } from '../../services/storage';
 import { SystemSettings } from '../../types/solar';
 import {
@@ -240,12 +240,12 @@ export const SettingsView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {PRESET_PERSONAS.map(p => (
-              <div key={p.profile.role} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+            {ROLE_DEFINITIONS.map(p => (
+              <div key={p.role} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-slate-900">{p.profile.role}</span>
+                  <span className="font-bold text-slate-900">{p.role}</span>
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-semibold border ${p.badgeColor}`}>
-                    {p.profile.department}
+                    {p.department}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500">{p.description}</p>

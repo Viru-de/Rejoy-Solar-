@@ -17,6 +17,7 @@ import {
   StageStatus,
   LeadStatus
 } from '../types/solar';
+import { buildStandardWorkflowStages, WorkflowProgressLevel } from './workflowStages';
 
 const STORAGE_KEYS = {
   LEADS: 'solar_erp_leads_v2',
@@ -378,496 +379,7 @@ const initialLeads: Lead[] = [
   }
 ];
 
-// Reusable standard workflow stage builder
-function buildStandardWorkflowStages(projectId: string, projectCapacityKw: number, progressLevel: '68_PERCENT' | 'EARLY' | 'COMPLETED' | 'DELAYED'): ProjectStage[] {
-  const is68 = progressLevel === '68_PERCENT';
-  const isCompleted = progressLevel === 'COMPLETED';
-  const isDelayed = progressLevel === 'DELAYED';
-
-  const stages: ProjectStage[] = [
-    {
-      id: `${projectId}-stage-1`,
-      stageKey: 'site_survey',
-      title: 'Site Survey',
-      order: 1,
-      department: 'Engineering',
-      assignedRole: 'Site Survey Engineer',
-      assignedEmployeeId: 'emp-3',
-      assignedEmployeeName: 'Rajesh Kumar',
-      status: 'COMPLETED',
-      priority: 'HIGH',
-      startDate: '2026-08-12',
-      dueDate: '2026-08-14',
-      completedDate: '2026-08-14',
-      comments: 'Site survey completed. Roof RCC is sound. 100 kW recommended with south orientation.',
-      approvedBy: 'Amit Sharma (PM)',
-      approvalDate: '2026-08-15',
-      gpsLocation: {
-        latitude: 22.9868,
-        longitude: 72.3789,
-        locationName: 'GIDC Sanand, Plot 42-45',
-        capturedAt: '2026-08-14T11:30:00Z'
-      },
-      checklist: [
-        { id: 'chk-1-1', title: 'GPS coordinates & roof orientation verified', completed: true, completedAt: '2026-08-14' },
-        { id: 'chk-1-2', title: 'Shadow analysis & obstacle mapping', completed: true, completedAt: '2026-08-14' },
-        { id: 'chk-1-3', title: 'Electricity bill & sanctioned load audited', completed: true, completedAt: '2026-08-14' },
-        { id: 'chk-1-4', title: 'Structural load bearing & slab condition check', completed: true, completedAt: '2026-08-14' },
-        { id: 'chk-1-5', title: 'Cable routing distance to LT panel measured', completed: true, completedAt: '2026-08-14' },
-        { id: 'chk-1-6', title: 'Site panoramic photos captured', completed: true, completedAt: '2026-08-14' }
-      ],
-      photos: [
-        { id: 'p-1', url: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&q=80&w=400', caption: 'Rooftop South view prior to installation', type: 'BEFORE', uploadedAt: '2026-08-14T11:40:00Z', uploadedBy: 'Rajesh Kumar' },
-        { id: 'p-2', url: 'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&q=80&w=400', caption: 'LT panel room measurement inspection', type: 'DURING', uploadedAt: '2026-08-14T12:00:00Z', uploadedBy: 'Rajesh Kumar' }
-      ],
-      documents: [
-        { id: 'doc-1', name: 'Site_Survey_Report_Sanand.pdf', url: '#', fileType: 'pdf', sizeMb: 3.4, uploadedAt: '2026-08-14', uploadedBy: 'Rajesh Kumar' }
-      ],
-      activities: [
-        { id: `${projectId}-act-1-1`, timestamp: '2026-08-12 10:00 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Assigned site survey to Rajesh Kumar' },
-        { id: `${projectId}-act-1-2`, timestamp: '2026-08-14 11:20 AM', user: 'Rajesh Kumar', role: 'Site Survey Engineer', action: 'Captured GPS location (22.9868° N, 72.3789° E)' },
-        { id: `${projectId}-act-1-3`, timestamp: '2026-08-14 12:15 PM', user: 'Rajesh Kumar', role: 'Site Survey Engineer', action: 'Completed all 6 checklist items and uploaded 2 survey photos' },
-        { id: `${projectId}-act-1-4`, timestamp: '2026-08-15 09:30 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Approved site survey and unlocked Customer Confirmation' }
-      ]
-    },
-    {
-      id: `${projectId}-stage-2`,
-      stageKey: 'customer_confirmation',
-      title: 'Customer Confirmation & Engineering Approval',
-      order: 2,
-      department: 'Sales & Engineering',
-      assignedRole: 'Project Manager',
-      assignedEmployeeId: 'emp-2',
-      assignedEmployeeName: 'Amit Sharma',
-      status: 'COMPLETED',
-      priority: 'HIGH',
-      startDate: '2026-08-16',
-      dueDate: '2026-08-18',
-      completedDate: '2026-08-18',
-      comments: '3D shadow simulation & SLD approved by client. Advance payment of ₹2,00,000 cleared.',
-      approvedBy: 'Amit Sharma (PM)',
-      approvalDate: '2026-08-18',
-      checklist: [
-        { id: 'chk-2-1', title: 'Solar PV plant layout drawing client sign-off', completed: true, completedAt: '2026-08-18' },
-        { id: 'chk-2-2', title: 'Single Line Diagram (SLD) approved', completed: true, completedAt: '2026-08-18' },
-        { id: 'chk-2-3', title: 'Turnkey EPC contract executed', completed: true, completedAt: '2026-08-18' },
-        { id: 'chk-2-4', title: 'Advance milestone payment verified', completed: true, completedAt: '2026-08-18' }
-      ],
-      photos: [],
-      documents: [
-        { id: 'doc-2', name: 'Approved_Single_Line_Diagram_SLD.pdf', url: '#', fileType: 'pdf', sizeMb: 2.1, uploadedAt: '2026-08-18', uploadedBy: 'Amit Sharma' }
-      ],
-      activities: [
-        { id: `${projectId}-act-2-1`, timestamp: '2026-08-18 04:00 PM', user: 'Amit Sharma', role: 'Project Manager', action: 'Client signed off SLD layout drawings. Advance milestone verified.' }
-      ]
-    },
-    {
-      id: `${projectId}-stage-3`,
-      stageKey: 'civil_work',
-      title: 'Civil Work',
-      order: 3,
-      department: 'Civil',
-      assignedRole: 'Civil Team',
-      assignedEmployeeId: 'emp-3',
-      assignedEmployeeName: 'Rajesh Kumar',
-      status: 'COMPLETED',
-      priority: 'HIGH',
-      startDate: '2026-08-20',
-      dueDate: '2026-08-24',
-      completedDate: '2026-08-24',
-      comments: 'All 28 RCC foundation pedestals cured with M25 grade concrete. Anchor bolts aligned.',
-      approvedBy: 'Amit Sharma (PM)',
-      approvalDate: '2026-08-25',
-      gpsLocation: {
-        latitude: 22.9869,
-        longitude: 72.3791,
-        locationName: 'Roof Pad Civil Zone A',
-        capturedAt: '2026-08-24T16:00:00Z'
-      },
-      checklist: [
-        { id: 'chk-3-1', title: 'Foundation marking & grid layout', completed: true, completedAt: '2026-08-21' },
-        { id: 'chk-3-2', title: 'Civil roof preparation & waterproofing coat', completed: true, completedAt: '2026-08-22' },
-        { id: 'chk-3-3', title: 'Structure foundation pedestal casting (M25)', completed: true, completedAt: '2026-08-23' },
-        { id: 'chk-3-4', title: 'Material verification & batch test report', completed: true, completedAt: '2026-08-24' },
-        { id: 'chk-3-5', title: 'Anchor fasteners torque testing', completed: true, completedAt: '2026-08-24' },
-        { id: 'chk-3-6', title: 'Site cleaned & debris removed', completed: true, completedAt: '2026-08-24' }
-      ],
-      photos: [
-        { id: 'p-3', url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=400', caption: 'Foundation marking and casting preparation', type: 'BEFORE', uploadedAt: '2026-08-21T10:00:00Z', uploadedBy: 'Rajesh Kumar' },
-        { id: 'p-4', url: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=400', caption: 'Concrete pedestals casting in progress', type: 'DURING', uploadedAt: '2026-08-23T15:00:00Z', uploadedBy: 'Rajesh Kumar' },
-        { id: 'p-5', url: 'https://images.unsplash.com/photo-1541888946425-d0fbb186c5f7?auto=format&fit=crop&q=80&w=400', caption: 'Cured foundations with waterproofing completed', type: 'AFTER', uploadedAt: '2026-08-24T16:30:00Z', uploadedBy: 'Rajesh Kumar' }
-      ],
-      documents: [],
-      activities: [
-        { id: `${projectId}-act-3-1`, timestamp: '2026-08-20 09:00 AM', user: 'Rajesh Kumar', role: 'Civil Team', action: 'Rajesh started civil work foundation marking' },
-        { id: `${projectId}-act-3-2`, timestamp: '2026-08-24 04:30 PM', user: 'Rajesh Kumar', role: 'Civil Team', action: 'Rajesh uploaded 3 photos (Before, During, After)' },
-        { id: `${projectId}-act-3-3`, timestamp: '2026-08-24 05:00 PM', user: 'Rajesh Kumar', role: 'Civil Team', action: 'Rajesh completed checklist (6/6)' },
-        { id: `${projectId}-act-3-4`, timestamp: '2026-08-25 10:00 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Project Manager approved civil work' }
-      ]
-    },
-    {
-      id: `${projectId}-stage-4`,
-      stageKey: 'structure_fabrication',
-      title: 'Structure Installation & Fabrication',
-      order: 4,
-      department: 'Structure',
-      assignedRole: 'Structure Team',
-      assignedEmployeeId: 'emp-6',
-      assignedEmployeeName: 'Dinesh Yadav',
-      status: 'COMPLETED',
-      priority: 'HIGH',
-      startDate: '2026-08-26',
-      dueDate: '2026-08-29',
-      completedDate: '2026-08-29',
-      comments: 'Hot Dip Galvanized (HDG 80 microns) structure assembled. Tilt angle set to 23 degrees south.',
-      approvedBy: 'Amit Sharma (PM)',
-      approvalDate: '2026-08-30',
-      checklist: [
-        { id: 'chk-4-1', title: 'HDG structure delivery & coating thickness verification', completed: true, completedAt: '2026-08-26' },
-        { id: 'chk-4-2', title: 'Column base mounting & plumb line calibration', completed: true, completedAt: '2026-08-27' },
-        { id: 'chk-4-3', title: 'Rafters & purlins bolting with SS304 hardware', completed: true, completedAt: '2026-08-28' },
-        { id: 'chk-4-4', title: 'Tilt angle calibration (23° South)', completed: true, completedAt: '2026-08-29' },
-        { id: 'chk-4-5', title: 'Wind gust bracing & stability check (150 km/h certified)', completed: true, completedAt: '2026-08-29' }
-      ],
-      photos: [
-        { id: 'p-6', url: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&q=80&w=400', caption: 'HDG module mounting structure erection', type: 'DURING', uploadedAt: '2026-08-28T14:00:00Z', uploadedBy: 'Dinesh Yadav' }
-      ],
-      documents: [],
-      activities: [
-        { id: `${projectId}-act-4-1`, timestamp: '2026-08-26 10:00 AM', user: 'Dinesh Yadav', role: 'Structure Team', action: 'Started structure erection with HDG materials' },
-        { id: `${projectId}-act-4-2`, timestamp: '2026-08-29 05:00 PM', user: 'Dinesh Yadav', role: 'Structure Team', action: 'Completed structure assembly with 23 degree tilt' },
-        { id: `${projectId}-act-4-3`, timestamp: '2026-08-30 11:15 AM', user: 'Amit Sharma', role: 'Project Manager', action: 'Approved structure fabrication' }
-      ]
-    },
-    {
-      id: `${projectId}-stage-5`,
-      stageKey: 'lightning_arrestor',
-      title: 'Lightning Arrestor (LA)',
-      order: 5,
-      department: 'Electrical',
-      assignedRole: 'Electrical Team',
-      assignedEmployeeId: 'emp-8',
-      assignedEmployeeName: 'Ankit Joshi',
-      status: 'COMPLETED',
-      priority: 'MEDIUM',
-      startDate: '2026-08-30',
-      dueDate: '2026-09-01',
-      completedDate: '2026-09-01',
-      comments: 'Early Streamer Emission (ESE) lightning arrestor installed at peak mast (6m elevation).',
-      approvedBy: 'Amit Sharma (PM)',
-      approvalDate: '2026-09-01',
-      checklist: [
-        { id: 'chk-5-1', title: 'ESE Lightning arrestor mast mounting', completed: true, completedAt: '2026-08-31' },
-        { id: 'chk-5-2', title: 'Copper coated down-conductor strip routing', completed: true, completedAt: '2026-09-01' },
-        { id: 'chk-5-3', title: 'Dedicated lightning earthing pit termination', completed: true, completedAt: '2026-09-01' },
-        { id: 'chk-5-4', title: 'Lightning strike counter tested', completed: true, completedAt: '2026-09-01' }
-      ],
-      photos: [],
-      documents: [],
-      activities: [
-        { id: `${projectId}-act-5-1`, timestamp: '2026-09-01 02:00 PM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Completed ESE LA installation with isolated down conductor' }
-      ]
-    },
-    {
-      id: `${projectId}-stage-6`,
-      stageKey: 'cdc_earthing',
-      title: 'CDC & Earthing Routing',
-      order: 6,
-      department: 'Electrical',
-      assignedRole: 'Electrical Team',
-      assignedEmployeeId: 'emp-8',
-      assignedEmployeeName: 'Ankit Joshi',
-      status: 'COMPLETED',
-      priority: 'HIGH',
-      startDate: '2026-09-01',
-      dueDate: '2026-09-03',
-      completedDate: '2026-09-03',
-      comments: '25x3 mm GI earthing strip routing across all module arrays and inverter stations.',
-      approvedBy: 'Amit Sharma (PM)',
-      approvalDate: '2026-09-03',
-      checklist: [
-        { id: 'chk-6-1', title: '25x3 mm GI earthing strip routing', completed: true, completedAt: '2026-09-02' },
-        { id: 'chk-6-2', title: 'Array to array continuity bonding lugs', completed: true, completedAt: '2026-09-02' },
-        { id: 'chk-6-3', title: 'DC cable UV-resistant conduits fixing', completed: true, completedAt: '2026-09-03' },
-        { id: 'chk-6-4', title: 'Cable tray routing with perforated covers', completed: true, completedAt: '2026-09-03' }
-      ],
-      photos: [],
-      documents: [],
-      activities: [
-        { id: `${projectId}-act-6-1`, timestamp: '2026-09-03 04:00 PM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Completed earthing grid routing' }
-      ]
-    },
-    {
-      id: `${projectId}-stage-7`,
-      stageKey: 'earthing_pits',
-      title: 'Chemical Earthing Pits',
-      order: 7,
-      department: 'Electrical',
-      assignedRole: 'Electrical Team',
-      assignedEmployeeId: 'emp-8',
-      assignedEmployeeName: 'Ankit Joshi',
-      status: 'COMPLETED',
-      priority: 'HIGH',
-      startDate: '2026-09-02',
-      dueDate: '2026-09-04',
-      completedDate: '2026-09-04',
-      comments: '4 chemical earthing pits dug & backfilled with BFC compound. Earth resistance < 1.2 Ohms.',
-      approvedBy: 'Amit Sharma (PM)',
-      approvalDate: '2026-09-04',
-      checklist: [
-        { id: 'chk-7-1', title: 'Pit 1: DC System Earthing (Resistance < 2Ω)', completed: true, completedAt: '2026-09-03' },
-        { id: 'chk-7-2', title: 'Pit 2: AC System Earthing (Resistance < 2Ω)', completed: true, completedAt: '2026-09-03' },
-        { id: 'chk-7-3', title: 'Pit 3: Inverter Body / Enclosure Grounding', completed: true, completedAt: '2026-09-04' },
-        { id: 'chk-7-4', title: 'Pit 4: Dedicated Lightning Protection Pit', completed: true, completedAt: '2026-09-04' },
-        { id: 'chk-7-5', title: 'Backfill compound (BFC) moisture packing', completed: true, completedAt: '2026-09-04' },
-        { id: 'chk-7-6', title: 'Pit chambers with test link & identification tag', completed: true, completedAt: '2026-09-04' }
-      ],
-      photos: [
-        { id: 'p-7', url: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=400', caption: 'Chemical earth pit testing with digital Earth Tester', type: 'AFTER', uploadedAt: '2026-09-04T15:00:00Z', uploadedBy: 'Ankit Joshi' }
-      ],
-      documents: [],
-      activities: [
-        { id: `${projectId}-act-7-1`, timestamp: '2026-09-04 05:00 PM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Earth test report verified. All readings well under 1.5 Ohms.' }
-      ]
-    },
-    {
-      id: `${projectId}-stage-8`,
-      stageKey: 'solar_installation',
-      title: 'Solar Module Installation',
-      order: 8,
-      department: 'Installation',
-      assignedRole: 'Installation Team',
-      assignedEmployeeId: 'emp-7',
-      assignedEmployeeName: 'Manoj Tiwari',
-      status: isCompleted ? 'COMPLETED' : (is68 ? 'IN PROGRESS' : (isDelayed ? 'BLOCKED' : 'NOT STARTED')),
-      priority: 'HIGH',
-      startDate: '2026-09-05',
-      dueDate: '2026-09-08',
-      completedDate: isCompleted ? '2026-08-25' : undefined,
-      comments: is68 ? '185 out of 185 panels lifted to rooftop. 130 panels mounted and mid-clamped.' : '',
-      approvedBy: isCompleted ? 'Amit Sharma (PM)' : undefined,
-      approvalDate: isCompleted ? '2026-08-25' : undefined,
-      gpsLocation: {
-        latitude: 22.9868,
-        longitude: 72.3789,
-        locationName: 'Rooftop Array Sector B',
-        capturedAt: '2026-09-06T14:15:00Z'
-      },
-      checklist: [
-        { id: 'chk-8-1', title: 'Solar panel unboxing & EL flash test verification', completed: true, completedAt: '2026-09-05' },
-        { id: 'chk-8-2', title: 'End clamps & mid clamps torque fastening (8 Nm)', completed: true, completedAt: '2026-09-06' },
-        { id: 'chk-8-3', title: 'String wiring with 4 sq mm solar DC cable', completed: isCompleted, completedAt: isCompleted ? '2026-08-24' : undefined },
-        { id: 'chk-8-4', title: 'MC4 connector crimping & polarity check', completed: isCompleted, completedAt: isCompleted ? '2026-08-24' : undefined },
-        { id: 'chk-8-5', title: 'Voc & Isc string test against simulation specs', completed: isCompleted, completedAt: isCompleted ? '2026-08-25' : undefined },
-        { id: 'chk-8-6', title: 'Array cleaning & alignment verification', completed: isCompleted, completedAt: isCompleted ? '2026-08-25' : undefined }
-      ],
-      photos: [
-        { id: 'p-8', url: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&q=80&w=400', caption: '100 kW Mono PERC modules mounting in progress', type: 'DURING', uploadedAt: '2026-09-06T11:00:00Z', uploadedBy: 'Manoj Tiwari' }
-      ],
-      documents: [],
-      activities: [
-        { id: `${projectId}-act-8-1`, timestamp: '2026-09-05 09:00 AM', user: 'Manoj Tiwari', role: 'Installation Team', action: 'Began module installation on arrays 1 to 6' },
-        { id: `${projectId}-act-8-2`, timestamp: '2026-09-06 02:00 PM', user: 'Manoj Tiwari', role: 'Installation Team', action: 'Uploaded progress photo. 70% modules physically mounted' }
-      ]
-    },
-    {
-      id: `${projectId}-stage-9`,
-      stageKey: 'inverter_installation',
-      title: 'Inverter Installation',
-      order: 9,
-      department: 'Electrical',
-      assignedRole: 'Electrical Team',
-      assignedEmployeeId: 'emp-8',
-      assignedEmployeeName: 'Ankit Joshi',
-      status: isCompleted ? 'COMPLETED' : (is68 ? 'IN PROGRESS' : 'NOT STARTED'),
-      priority: 'HIGH',
-      startDate: '2026-09-06',
-      dueDate: '2026-09-09',
-      completedDate: isCompleted ? '2026-08-26' : undefined,
-      comments: is68 ? 'Sungrow 100 kW 3-phase string inverter mounted in canopy. DC conduits pulled.' : '',
-      checklist: [
-        { id: 'chk-9-1', title: 'Inverter canopy mounting on weather-shielded wall', completed: true, completedAt: '2026-09-06' },
-        { id: 'chk-9-2', title: 'DC string inputs termination (8 MPPT channels)', completed: isCompleted, completedAt: isCompleted ? '2026-08-26' : undefined },
-        { id: 'chk-9-3', title: 'Internal surge protection devices (SPD) checked', completed: isCompleted, completedAt: isCompleted ? '2026-08-26' : undefined },
-        { id: 'chk-9-4', title: 'Dual body earthing connected', completed: true, completedAt: '2026-09-06' },
-        { id: 'chk-9-5', title: 'Ventilation & clearance verification', completed: true, completedAt: '2026-09-06' }
-      ],
-      photos: [],
-      documents: [],
-      activities: [
-        { id: `${projectId}-act-9-1`, timestamp: '2026-09-06 10:30 AM', user: 'Ankit Joshi', role: 'Electrical Team', action: 'Mounted 100 kW Sungrow grid-tied inverter' }
-      ]
-    },
-    {
-      id: `${projectId}-stage-10`,
-      stageKey: 'meter_synchronisation',
-      title: 'Meter Synchronisation & Discom Bi-Directional Meter',
-      order: 10,
-      department: 'Engineering & Liaisoning',
-      assignedRole: 'Project Manager',
-      assignedEmployeeId: 'emp-2',
-      assignedEmployeeName: 'Amit Sharma',
-      status: isCompleted ? 'COMPLETED' : (isDelayed ? 'OVERDUE' : 'NOT STARTED'),
-      priority: 'HIGH',
-      dueDate: '2026-09-12',
-      completedDate: isCompleted ? '2026-08-27' : undefined,
-      comments: isDelayed ? 'Discom meter testing team visit delayed due to inspector unavailability.' : '',
-      checklist: [
-        { id: 'chk-10-1', title: 'Bi-directional CT/PT Net Meter application filed', completed: isCompleted || is68 },
-        { id: 'chk-10-2', title: 'Discom inspection fee receipt verified', completed: isCompleted || is68 },
-        { id: 'chk-10-3', title: 'Physical net meter testing in Discom laboratory', completed: isCompleted },
-        { id: 'chk-10-4', title: 'Net meter installation & CT sealing by Discom engineer', completed: isCompleted },
-        { id: 'chk-10-5', title: 'Initial import/export meter reading joint log signed', completed: isCompleted }
-      ],
-      photos: [],
-      documents: [],
-      activities: []
-    },
-    {
-      id: `${projectId}-stage-11`,
-      stageKey: 'inverter_wifi_pairing',
-      title: 'Inverter WiFi / 4G Dongle Pairing & Cloud Setup',
-      order: 11,
-      department: 'Service',
-      assignedRole: 'Service Manager',
-      assignedEmployeeId: 'emp-11',
-      assignedEmployeeName: 'Rohit Verma',
-      status: isCompleted ? 'COMPLETED' : 'NOT STARTED',
-      priority: 'MEDIUM',
-      dueDate: '2026-09-13',
-      completedDate: isCompleted ? '2026-08-27' : undefined,
-      checklist: [
-        { id: 'chk-11-1', title: '4G/WiFi data logger dongle inserted', completed: isCompleted },
-        { id: 'chk-11-2', title: 'Client portal & plant profile configured on iSolarCloud', completed: isCompleted },
-        { id: 'chk-11-3', title: 'Live telemetry verification (kW generation, voltage, frequency)', completed: isCompleted },
-        { id: 'chk-11-4', title: 'Client app login credentials handed over', completed: isCompleted }
-      ],
-      photos: [],
-      documents: [],
-      activities: []
-    },
-    {
-      id: `${projectId}-stage-12`,
-      stageKey: 'acdb_dcdb_fixing',
-      title: 'ACDB + DCDB Fixing & Internal Wiring',
-      order: 12,
-      department: 'Electrical',
-      assignedRole: 'Electrical Team',
-      assignedEmployeeId: 'emp-8',
-      assignedEmployeeName: 'Ankit Joshi',
-      status: isCompleted ? 'COMPLETED' : 'NOT STARTED',
-      priority: 'HIGH',
-      dueDate: '2026-09-14',
-      completedDate: isCompleted ? '2026-08-27' : undefined,
-      checklist: [
-        { id: 'chk-12-1', title: 'IP65 DCDB with fuse & Type II SPD mounting', completed: isCompleted },
-        { id: 'chk-12-2', title: 'ACDB with 160A 4-Pole MCCB and class C SPD', completed: isCompleted },
-        { id: 'chk-12-3', title: 'Phase indication lamps & multi-function meter connected', completed: isCompleted },
-        { id: 'chk-12-4', title: 'Warning labels & shock hazard signage affixed', completed: isCompleted }
-      ],
-      photos: [],
-      documents: [],
-      activities: []
-    },
-    {
-      id: `${projectId}-stage-13`,
-      stageKey: 'ac_side_electrical',
-      title: 'AC Side Electrical Connection & LT Breaker Tapping',
-      order: 13,
-      department: 'Electrical',
-      assignedRole: 'Electrical Team',
-      assignedEmployeeId: 'emp-8',
-      assignedEmployeeName: 'Ankit Joshi',
-      status: isCompleted ? 'COMPLETED' : 'NOT STARTED',
-      priority: 'HIGH',
-      dueDate: '2026-09-15',
-      completedDate: isCompleted ? '2026-08-28' : undefined,
-      checklist: [
-        { id: 'chk-13-1', title: '3.5C x 95 sq mm XLPE Armoured Aluminium cable pulling', completed: isCompleted },
-        { id: 'chk-13-2', title: 'Cable termination with heavy-duty brass glands & lugs', completed: isCompleted },
-        { id: 'chk-13-3', title: 'Tapping into factory main LT distribution board (LTDP)', completed: isCompleted },
-        { id: 'chk-13-4', title: 'Insulation resistance megger test (1000V DC)', completed: isCompleted }
-      ],
-      photos: [],
-      documents: [],
-      activities: []
-    },
-    {
-      id: `${projectId}-stage-14`,
-      stageKey: 'final_verification',
-      title: 'Final Verification & CEIG / Safety Inspection',
-      order: 14,
-      department: 'Operations',
-      assignedRole: 'Project Manager',
-      assignedEmployeeId: 'emp-2',
-      assignedEmployeeName: 'Amit Sharma',
-      status: isCompleted ? 'COMPLETED' : 'NOT STARTED',
-      priority: 'HIGH',
-      dueDate: '2026-09-16',
-      completedDate: isCompleted ? '2026-08-28' : undefined,
-      checklist: [
-        { id: 'chk-14-1', title: 'Panels & torque marks verified', completed: isCompleted },
-        { id: 'chk-14-2', title: 'Structure rigidity & galvanization verified', completed: isCompleted },
-        { id: 'chk-14-3', title: 'Earthing resistance audit certificates verified', completed: isCompleted },
-        { id: 'chk-14-4', title: 'ACDB & DCDB safety trip tests passed', completed: isCompleted },
-        { id: 'chk-14-5', title: 'Inverter anti-islanding protection verified', completed: isCompleted },
-        { id: 'chk-14-6', title: 'Net meter synchronization verified', completed: isCompleted },
-        { id: 'chk-14-7', title: 'Safety checklist & fire extinguisher placement checked', completed: isCompleted },
-        { id: 'chk-14-8', title: 'Documentation & As-Built drawing bundle prepared', completed: isCompleted }
-      ],
-      photos: [],
-      documents: [],
-      activities: []
-    },
-    {
-      id: `${projectId}-stage-15`,
-      stageKey: 'final_handover',
-      title: 'Final Handover & Commercial Commissioning',
-      order: 15,
-      department: 'Management',
-      assignedRole: 'Project Manager',
-      assignedEmployeeId: 'emp-2',
-      assignedEmployeeName: 'Amit Sharma',
-      status: isCompleted ? 'COMPLETED' : 'NOT STARTED',
-      priority: 'HIGH',
-      dueDate: '2026-09-17',
-      completedDate: isCompleted ? '2026-08-29' : undefined,
-      checklist: [
-        { id: 'chk-15-1', title: 'Plant commissioning certificate signed with client', completed: isCompleted },
-        { id: 'chk-15-2', title: 'Final invoice submitted & final payment receipt acknowledged', completed: isCompleted },
-        { id: 'chk-15-3', title: '25-year solar module performance warranty binder delivered', completed: isCompleted },
-        { id: 'chk-15-4', title: 'Inverter 5-year replacement warranty certificate delivered', completed: isCompleted },
-        { id: 'chk-15-5', title: 'Client maintenance training conducted', completed: isCompleted }
-      ],
-      photos: [],
-      documents: [],
-      activities: []
-    },
-    {
-      id: `${projectId}-stage-16`,
-      stageKey: 'service_amc',
-      title: 'Service / AMC Handover',
-      order: 16,
-      department: 'Service',
-      assignedRole: 'Service Manager',
-      assignedEmployeeId: 'emp-11',
-      assignedEmployeeName: 'Rohit Verma',
-      status: isCompleted ? 'APPROVED' : 'NOT STARTED',
-      priority: 'MEDIUM',
-      dueDate: '2026-09-20',
-      checklist: [
-        { id: 'chk-16-1', title: 'Service contract activated in ERP', completed: isCompleted },
-        { id: 'chk-16-2', title: 'Annual maintenance visit calendar scheduled (Quarterly)', completed: isCompleted },
-        { id: 'chk-16-3', title: 'Emergency breakdown helpline shared with client', completed: isCompleted }
-      ],
-      photos: [],
-      documents: [],
-      activities: []
-    }
-  ];
-
-  return stages;
-}
+// Modular workflow stages imported from ./workflowStages
 
 const initialProjects: SolarProject[] = [
   {
@@ -909,7 +421,7 @@ const initialProjects: SolarProject[] = [
     city: 'Surat',
     startDate: '2026-08-15',
     expectedCompletionDate: '2026-10-05',
-    stages: buildStandardWorkflowStages('proj-2', 250, 'EARLY'),
+    stages: buildStandardWorkflowStages('proj-2', 250, 'STAGE_4'),
     notes: 'Textile spinning mill rooftop. Structural load reinforcement underway.',
     createdAt: '2026-08-14T11:00:00Z',
     updatedAt: '2026-09-05T16:00:00Z'
@@ -931,7 +443,7 @@ const initialProjects: SolarProject[] = [
     city: 'Ahmedabad',
     startDate: '2026-08-22',
     expectedCompletionDate: '2026-09-28',
-    stages: buildStandardWorkflowStages('proj-3', 40, 'EARLY'),
+    stages: buildStandardWorkflowStages('proj-3', 40, 'STAGE_2'),
     notes: 'Hospital load requires zero export interlock until Discom meter arrives.',
     createdAt: '2026-08-21T09:00:00Z',
     updatedAt: '2026-09-04T12:00:00Z'
@@ -1530,8 +1042,8 @@ class StorageService {
       totalValue: lead.estimatedValue || lead.solarCapacityKw * 50000,
       status: 'SURVEY',
       currentStageKey: 'site_survey',
-      completionPercentage: 10,
-      progressPercentage: 10,
+      completionPercentage: 0,
+      progressPercentage: 0,
       location: lead.city,
       projectManagerId: 'emp-2',
       projectManagerName: convertedByName || 'Amit Sharma',
@@ -1539,7 +1051,7 @@ class StorageService {
       city: lead.city,
       startDate: new Date().toISOString().split('T')[0],
       expectedCompletionDate: new Date(Date.now() + 45 * 86400000).toISOString().split('T')[0],
-      stages: buildStandardWorkflowStages(projectId, lead.solarCapacityKw, 'EARLY'),
+      stages: buildStandardWorkflowStages(projectId, lead.solarCapacityKw, 'NEW'),
       notes: `Converted from Lead ID: ${lead.id}${convertedByName ? ` by ${convertedByName} (${role || 'Sales'})` : ''}. ${lead.notes}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -1552,7 +1064,83 @@ class StorageService {
 
     this.addNotification({
       title: 'Lead Converted to Active Project',
-      message: `${lead.customerName} converted into Customer & Project ${newProject.projectCode} (${lead.solarCapacityKw} kW).`,
+      message: `${lead.customerName} converted into Customer & Project ${newProject.projectCode} (${lead.solarCapacityKw} kW). Stage 1 (Site Survey) is active.`,
+      type: 'SUCCESS',
+      linkType: 'PROJECT',
+      linkId: projectId,
+      customerId: customerId,
+      projectId: projectId,
+      projectName: newProject.title
+    });
+
+    return { customer: newCustomer, project: newProject };
+  }
+
+  // Create new Customer and Solar Project with strictly initialized Stage 1
+  createCustomerAndProject(customerData: {
+    name: string;
+    companyName?: string;
+    customerType?: 'Residential' | 'Commercial' | 'Industrial';
+    phone: string;
+    email?: string;
+    siteAddress?: string;
+    city?: string;
+    capacityKw?: number;
+    estimatedValue?: number;
+  }, createdByName: string = 'System Admin', role: string = 'Admin'): { customer: Customer; project: SolarProject } {
+    const customerId = `cust-${Date.now()}`;
+    const projectId = `proj-${Date.now()}`;
+    const capacityKw = Number(customerData.capacityKw) || 10;
+    const estimatedValue = Number(customerData.estimatedValue) || capacityKw * 50000;
+
+    const newCustomer: Customer = {
+      id: customerId,
+      name: customerData.name,
+      companyName: customerData.companyName || customerData.name,
+      customerType: customerData.customerType || 'Commercial',
+      phone: customerData.phone,
+      email: customerData.email || '',
+      siteAddress: customerData.siteAddress || '',
+      city: customerData.city || 'Ahmedabad',
+      state: 'Gujarat',
+      pincode: '380001',
+      status: 'ACTIVE',
+      activeProjectId: projectId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    const newProject: SolarProject = {
+      id: projectId,
+      projectCode: `SOL-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+      customerId: customerId,
+      customerName: newCustomer.name,
+      title: `${capacityKw} kW Rooftop Solar Project`,
+      capacityKw: capacityKw,
+      totalValue: estimatedValue,
+      status: 'SURVEY',
+      currentStageKey: 'site_survey',
+      completionPercentage: 0,
+      progressPercentage: 0,
+      location: customerData.city || 'Ahmedabad',
+      projectManagerId: 'emp-2',
+      projectManagerName: createdByName,
+      siteAddress: customerData.siteAddress || '',
+      city: customerData.city || 'Ahmedabad',
+      startDate: new Date().toISOString().split('T')[0],
+      expectedCompletionDate: new Date(Date.now() + 45 * 86400000).toISOString().split('T')[0],
+      stages: buildStandardWorkflowStages(projectId, capacityKw, 'NEW'),
+      notes: `Created by ${createdByName} (${role}). Initialized at Stage 1: Site Survey.`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    this.saveCustomer(newCustomer);
+    this.saveProject(newProject);
+
+    this.addNotification({
+      title: 'New Solar Project Initialized',
+      message: `Project ${newProject.projectCode} (${capacityKw} kW) created for ${newCustomer.name}. Stage 1 (Site Survey) is active.`,
       type: 'SUCCESS',
       linkType: 'PROJECT',
       linkId: projectId,
@@ -1582,7 +1170,71 @@ class StorageService {
 
   // --- Projects & Workflow Automation ---
   getProjects(): SolarProject[] {
-    return this.get<SolarProject[]>(STORAGE_KEYS.PROJECTS, initialProjects);
+    const rawProjects = this.get<SolarProject[]>(STORAGE_KEYS.PROJECTS, initialProjects);
+    let mutated = false;
+
+    // Self-healing integrity check:
+    // A stage N cannot be COMPLETED/APPROVED unless all previous stages 0..N-1 are COMPLETED/APPROVED.
+    // Ensure newly initialized projects never have stages 2..16 completed.
+    const sanitized = rawProjects.map(project => {
+      let hasIncompletePriorStage = false;
+      let stagesChanged = false;
+
+      const cleanedStages = project.stages.map((stage, idx) => {
+        if (idx === 0) {
+          if (stage.status !== 'COMPLETED' && stage.status !== 'APPROVED') {
+            hasIncompletePriorStage = true;
+          }
+          return stage;
+        }
+
+        if (hasIncompletePriorStage) {
+          if (stage.status === 'COMPLETED' || stage.status === 'APPROVED') {
+            stagesChanged = true;
+            return {
+              ...stage,
+              status: 'NOT STARTED' as StageStatus,
+              actualEndDate: undefined,
+              completedDate: undefined,
+              approvedBy: undefined,
+              approvalDate: undefined,
+              checklist: stage.checklist.map(c => ({
+                ...c,
+                completed: false,
+                completedAt: undefined,
+                completedBy: undefined
+              }))
+            };
+          }
+        }
+
+        if (stage.status !== 'COMPLETED' && stage.status !== 'APPROVED') {
+          hasIncompletePriorStage = true;
+        }
+
+        return stage;
+      });
+
+      if (stagesChanged) {
+        mutated = true;
+        const completedCount = cleanedStages.filter(s => s.status === 'COMPLETED' || s.status === 'APPROVED').length;
+        const completionPercentage = Math.round((completedCount / cleanedStages.length) * 100);
+        return {
+          ...project,
+          stages: cleanedStages,
+          completionPercentage,
+          progressPercentage: completionPercentage
+        };
+      }
+
+      return project;
+    });
+
+    if (mutated) {
+      this.set(STORAGE_KEYS.PROJECTS, sanitized);
+    }
+
+    return sanitized;
   }
 
   getProjectById(id: string): SolarProject | undefined {
@@ -1603,7 +1255,7 @@ class StorageService {
   // Update a single stage within a project with automatic advancement logic
   updateProjectStage(
     projectId: string,
-    stageId: string,
+    stageIdOrKey: string,
     updates: Partial<ProjectStage>,
     actorName: string,
     actorRole: string
@@ -1611,10 +1263,23 @@ class StorageService {
     const project = this.getProjectById(projectId);
     if (!project) return null;
 
-    const stageIndex = project.stages.findIndex(s => s.id === stageId);
+    const stageIndex = project.stages.findIndex(s => s.id === stageIdOrKey || s.stageKey === stageIdOrKey);
     if (stageIndex === -1) return null;
 
     const currentStage = project.stages[stageIndex];
+
+    // STRICT SEQUENTIAL ENFORCEMENT:
+    // A stage cannot be marked COMPLETED or APPROVED if any prior stage is incomplete
+    if (updates.status === 'COMPLETED' || updates.status === 'APPROVED') {
+      for (let i = 0; i < stageIndex; i++) {
+        const priorStage = project.stages[i];
+        if (priorStage.status !== 'COMPLETED' && priorStage.status !== 'APPROVED') {
+          console.warn(`Cannot complete stage "${currentStage.title}": Prior stage "${priorStage.title}" is not finished.`);
+          return project;
+        }
+      }
+    }
+
     const updatedStage: ProjectStage = {
       ...currentStage,
       ...updates
@@ -1637,8 +1302,8 @@ class StorageService {
 
     project.stages[stageIndex] = updatedStage;
 
-    // BUSINESS LOGIC: AUTOMATIC WORKFLOW PROGRESSION
-    // If a stage is marked COMPLETED or APPROVED, unlock the next stage!
+    // BUSINESS LOGIC: AUTOMATIC SEQUENTIAL ADVANCEMENT
+    // If a stage is marked COMPLETED or APPROVED, unlock ONLY the immediate next stage!
     if (
       (updates.status === 'COMPLETED' || updates.status === 'APPROVED') &&
       stageIndex + 1 < project.stages.length
@@ -1647,6 +1312,7 @@ class StorageService {
       if (nextStage.status === 'NOT STARTED') {
         nextStage.status = 'IN PROGRESS';
         nextStage.startDate = new Date().toISOString().split('T')[0];
+        nextStage.dueDate = new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0];
         nextStage.activities = [
           ...(nextStage.activities || []),
           {
@@ -1654,7 +1320,7 @@ class StorageService {
             timestamp: new Date().toLocaleString(),
             user: 'System Workflow Engine',
             role: 'Automation',
-            action: `Automatically unlocked next stage: "${nextStage.title}" because previous stage was completed.`
+            action: `Automatically unlocked next stage: "${nextStage.title}" because previous stage "${updatedStage.title}" was completed.`
           }
         ];
         project.currentStageKey = nextStage.stageKey;
@@ -1670,18 +1336,39 @@ class StorageService {
       }
     }
 
+    // IF A STAGE IS REOPENED TO 'IN PROGRESS':
+    // Subsequent stages (stageIndex + 1 onwards) must be reset back to NOT STARTED
+    if (updates.status === 'IN PROGRESS') {
+      project.currentStageKey = currentStage.stageKey;
+      for (let j = stageIndex + 1; j < project.stages.length; j++) {
+        if (project.stages[j].status === 'IN PROGRESS' || project.stages[j].status === 'COMPLETED' || project.stages[j].status === 'APPROVED') {
+          project.stages[j].status = 'NOT STARTED';
+          project.stages[j].actualEndDate = undefined;
+          project.stages[j].completedDate = undefined;
+          project.stages[j].approvedBy = undefined;
+          project.stages[j].approvalDate = undefined;
+        }
+      }
+    }
+
     // Recalculate Project Completion Percentage dynamically based on completed stages
     const totalStages = project.stages.length;
     const completedStages = project.stages.filter(s => s.status === 'COMPLETED' || s.status === 'APPROVED').length;
-    const inProgressStages = project.stages.filter(s => s.status === 'IN PROGRESS').length;
-    project.completionPercentage = Math.round(((completedStages + (inProgressStages * 0.4)) / totalStages) * 100);
+    project.completionPercentage = Math.round((completedStages / totalStages) * 100);
+    project.progressPercentage = project.completionPercentage;
 
-    // If all stages complete, mark project COMPLETED
+    // Project high-level status progression
     if (completedStages === totalStages) {
       project.status = 'COMPLETED';
       project.actualCompletionDate = new Date().toISOString().split('T')[0];
     } else if (project.stages.some(s => s.status === 'OVERDUE' || s.status === 'BLOCKED')) {
       project.status = 'DELAYED';
+    } else if (completedStages === 0) {
+      project.status = 'SURVEY';
+    } else if (completedStages < 4) {
+      project.status = 'DESIGN & APPROVALS';
+    } else if (completedStages < 10) {
+      project.status = 'CIVIL & STRUCTURE';
     } else {
       project.status = 'INSTALLATION';
     }
@@ -1693,7 +1380,7 @@ class StorageService {
   // Toggle checklist item within a stage
   toggleChecklistItem(
     projectId: string,
-    stageId: string,
+    stageIdOrKey: string,
     checkItemId: string,
     actorName: string,
     actorRole: string
@@ -1701,7 +1388,7 @@ class StorageService {
     const project = this.getProjectById(projectId);
     if (!project) return null;
 
-    const stage = project.stages.find(s => s.id === stageId);
+    const stage = project.stages.find(s => s.id === stageIdOrKey || s.stageKey === stageIdOrKey);
     if (!stage) return null;
 
     const item = stage.checklist.find(c => c.id === checkItemId);
@@ -1711,6 +1398,7 @@ class StorageService {
     item.completedAt = item.completed ? new Date().toISOString() : undefined;
     item.completedBy = item.completed ? actorName : undefined;
 
+    stage.activities = stage.activities || [];
     stage.activities.push({
       id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       timestamp: new Date().toLocaleString(),
@@ -1719,12 +1407,8 @@ class StorageService {
       action: `${item.completed ? 'Checked' : 'Unchecked'} task: "${item.title}"`
     });
 
-    // If all items checked and stage is in progress, automatically set to COMPLETED
-    const allChecked = stage.checklist.every(c => c.completed);
-    if (allChecked && stage.status === 'IN PROGRESS') {
-      return this.updateProjectStage(projectId, stageId, { status: 'COMPLETED', completedDate: new Date().toISOString().split('T')[0] }, actorName, actorRole);
-    }
-
+    // Note: Stage completion is NOT triggered automatically by checklist toggles.
+    // It requires explicit user approval / completion with validation.
     this.saveProject(project);
     return project;
   }

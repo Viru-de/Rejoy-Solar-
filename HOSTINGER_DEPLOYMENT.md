@@ -44,29 +44,51 @@ dist/
 4. Upload all files and folders **from inside the `dist/` directory** directly into `public_html/`.
    - Ensure the hidden file **`.htaccess`** is uploaded (enable "Show hidden files" in File Manager settings if you don't see it).
 
-### Step 3: Configure Environment Variables on Hostinger
-You have two easy ways to set your `GEMINI_API_KEY`:
+### Step 3: Configure Firebase Authentication & Environment Variables
+The Solar ERP uses **Firebase Web SDK** for secure client-side authentication:
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and select or create your project.
+2. In **Build → Authentication**, click **Get Started** and enable **Email/Password** provider.
+3. In **Authentication → Settings → Authorized Domains**, add your Hostinger production domain (e.g., `yourdomain.com`) as well as `localhost`.
+4. In **Project Settings → General → Your apps**, create a Web app (`</>`) and copy the Firebase config values.
 
-#### Option A: In `.env` inside `public_html` (Recommended)
-1. In `public_html/`, create a file named `.env` (or copy `.env.example`).
-2. Add your key:
+**Two easy ways to configure Firebase:**
+- **Option A (Build-time via `.env`):**
+  Before running `npm run build`:
+  ```ini
+  VITE_FIREBASE_API_KEY=your_firebase_api_key
+  VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+  VITE_FIREBASE_PROJECT_ID=your_project_id
+  VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+  VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+  VITE_FIREBASE_APP_ID=your_app_id
+  ```
+- **Option B (Zero-recompile in `public_html/firebase-config.js`):**
+  If you uploaded the pre-compiled `dist/` directly and want to set credentials without running Node.js on Hostinger, open `public_html/firebase-config.js` in Hostinger File Manager and paste your Firebase keys inside `window.__FIREBASE_CONFIG__`.
+
+5. For Gemini AI proxy on Hostinger, create or edit `public_html/.env`:
    ```ini
    GEMINI_API_KEY=your_actual_gemini_api_key_here
    ```
-3. Save the file. The `.htaccess` file automatically blocks public access to `.env` files.
+   *(Protected automatically: `.htaccess` blocks public web downloads of `.env`).*
 
-#### Option B: In Hostinger hPanel PHP Configuration
-1. In hPanel, go to **Advanced** → **PHP Configuration** → **PHP Options**.
-2. Or define an Apache environment directive in `.htaccess`:
-   ```apache
-   SetEnv GEMINI_API_KEY "your_actual_gemini_api_key_here"
+### Step 4 (Optional): Hostinger MySQL Database Setup
+If you wish to connect Hostinger MySQL:
+1. In Hostinger hPanel, navigate to **Databases** → **MySQL Databases** and create a new database (e.g., `u123456_solarpulse`).
+2. Click **Enter phpMyAdmin** and import `public_html/api/schema.sql`.
+3. In `public_html/.env`, add:
+   ```ini
+   DB_HOST=localhost
+   DB_NAME=u123456_solarpulse
+   DB_USER=u123456_solaruser
+   DB_PASS=your_db_password
    ```
+4. Verify connection status at `https://your-domain.com/api/db.php`.
 
-### Step 4: Verify Deployment
-1. Visit `https://your-domain.com/` in your browser. The Solar ERP dashboard should render immediately.
-2. Check the API health endpoint: `https://your-domain.com/api/status.php`.
-   - It will return a JSON status indicating PHP version and whether `GEMINI_API_KEY` is loaded.
-3. Test deep navigation: Click on **Projects**, **Customers**, or **HRMS**, and refresh the page. The `.htaccess` rewrite rules will seamlessly route the request to `index.html` without 404 errors.
+### Step 5: Verify Deployment
+1. Visit `https://your-domain.com/` in your browser. The Solar ERP sign-in interface will appear.
+2. Sign in with your registered Firebase user account.
+3. Check the API health endpoint: `https://your-domain.com/api/status.php`.
+4. Test deep navigation: Click on **Projects**, **Customers**, **HRMS**, or **Finance**, and refresh the page (`F5`). The `.htaccess` rewrite rules will seamlessly route the request without 404 errors.
 
 ---
 

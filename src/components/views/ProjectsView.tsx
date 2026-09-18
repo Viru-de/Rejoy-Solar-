@@ -21,13 +21,13 @@ import {
 } from 'lucide-react';
 
 export const ProjectsView: React.FC = () => {
-  const { openCustomerControlCenter, openWhatsAppModal, openImportExportModal, stageFilterKey, setStageFilterKey } = useApp();
+  const { openCustomerControlCenter, openWhatsAppModal, openImportExportModal, stageFilterKey, setStageFilterKey, refreshTrigger } = useApp();
   const { currentUser } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeStageFilter, setActiveStageFilter] = useState<string>(stageFilterKey || 'ALL');
 
-  const projects = useMemo(() => storageService.getProjects(), []);
+  const projects = useMemo(() => storageService.getProjects(), [refreshTrigger]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {

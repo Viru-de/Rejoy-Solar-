@@ -28,7 +28,7 @@ import {
 export const CrmView: React.FC<{ defaultTab?: 'LEADS' | 'CUSTOMERS' | 'QUOTATIONS' }> = ({
   defaultTab = 'LEADS'
 }) => {
-  const { openCustomerControlCenter, openWhatsAppModal, openImportExportModal, showToast, triggerRefresh } = useApp();
+  const { openCustomerControlCenter, openWhatsAppModal, openImportExportModal, showToast, triggerRefresh, refreshTrigger } = useApp();
   const { currentUser } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'LEADS' | 'CUSTOMERS' | 'QUOTATIONS'>(defaultTab);
@@ -50,6 +50,20 @@ export const CrmView: React.FC<{ defaultTab?: 'LEADS' | 'CUSTOMERS' | 'QUOTATION
     notes: 'Inquired for factory rooftop solar installation.'
   });
 
+  // New Customer Modal state
+  const [isNewCustomerOpen, setIsNewCustomerOpen] = useState(false);
+  const [customerForm, setCustomerForm] = useState({
+    name: '',
+    companyName: '',
+    customerType: 'Commercial' as 'Residential' | 'Commercial' | 'Industrial',
+    phone: '',
+    email: '',
+    siteAddress: '',
+    city: 'Ahmedabad',
+    capacityKw: 25,
+    estimatedValue: 1250000
+  });
+
   // Quotation Builder Modal state
   const [isNewQuotationOpen, setIsNewQuotationOpen] = useState(false);
   const [quoteForm, setQuoteForm] = useState({
@@ -63,9 +77,9 @@ export const CrmView: React.FC<{ defaultTab?: 'LEADS' | 'CUSTOMERS' | 'QUOTATION
     discountAmount: 50000
   });
 
-  const leads = useMemo(() => storageService.getLeads(), []);
-  const customers = useMemo(() => storageService.getCustomers(), []);
-  const quotations = useMemo(() => storageService.getQuotations(), []);
+  const leads = useMemo(() => storageService.getLeads(), [refreshTrigger]);
+  const customers = useMemo(() => storageService.getCustomers(), [refreshTrigger]);
+  const quotations = useMemo(() => storageService.getQuotations(), [refreshTrigger]);
 
   // Filtered lists
   const filteredLeads = useMemo(() => {
@@ -117,6 +131,25 @@ export const CrmView: React.FC<{ defaultTab?: 'LEADS' | 'CUSTOMERS' | 'QUOTATION
       currentUser.role
     );
     showToast(`Lead converted! Created Customer & Project ${result.project.projectCode}`, 'success');
+    triggerRefresh();
+    openCustomerControlCenter(result.customer.id, result.project.id);
+  };
+
+  const handleCreateCustomerAndProject = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customerForm.name || !customerForm.phone) {
+      showToast('Customer name and phone number are required', 'error');
+      return;
+    }
+
+    const result = storageService.createCustomerAndProject(
+      customerForm,
+      currentUser.name,
+      currentUser.role
+    );
+
+    setIsNewCustomerOpen(false);
+    showToast(`Created Customer "${result.customer.name}" & Project ${result.project.projectCode}. Stage 1 initialized.`, 'success');
     triggerRefresh();
     openCustomerControlCenter(result.customer.id, result.project.id);
   };

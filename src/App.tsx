@@ -9,6 +9,8 @@ import { GlobalSearchModal } from './components/common/GlobalSearchModal';
 import { WhatsAppModal } from './components/common/WhatsAppModal';
 import { ImportExportModal } from './components/common/ImportExportModal';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { LoginView } from './components/auth/LoginView';
+import { Sun } from 'lucide-react';
 
 // Code-splitting via dynamic imports for optimized Hostinger bundle performance
 const DashboardView = React.lazy(() => import('./components/views/DashboardView').then(m => ({ default: m.DashboardView })));
@@ -102,13 +104,41 @@ const MainLayout: React.FC = () => {
   );
 };
 
+const ProtectedApp: React.FC = () => {
+  const { currentUser, isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white gap-4">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-400 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 animate-pulse">
+          <Sun className="w-6 h-6" />
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-slate-400 font-medium tracking-wide">
+            Verifying Firebase session...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !currentUser) {
+    return <LoginView />;
+  }
+
+  return (
+    <AppProvider>
+      <MainLayout />
+    </AppProvider>
+  );
+};
+
 export default function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <AppProvider>
-          <MainLayout />
-        </AppProvider>
+        <ProtectedApp />
       </AuthProvider>
     </ErrorBoundary>
   );
